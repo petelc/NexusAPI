@@ -1,0 +1,33 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".template.config/template.json" />
+    <File Path="CleanArchitecture.nuspec" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Nexus.API.Core/Nexus.API.Core.csproj" />
+    <Project Path="src/Nexus.API.Infrastructure/Nexus.API.Infrastructure.csproj" />
+    <Project Path="src/Nexus.API.UseCases/Nexus.API.UseCases.csproj" />
+    <Project Path="src/Nexus.API.Web/Nexus.API.Web.csproj" />
+  </Folder>
+  <Folder Name="/src/_aspire/">
+    <Project Path="src/Nexus.API.AspireHost/Nexus.API.AspireHost.csproj" />
+    <Project Path="src/Nexus.API.ServiceDefaults/Nexus.API.ServiceDefaults.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Nexus.API.FunctionalTests/Nexus.API.FunctionalTests.csproj">
+      <BuildDependency Project="src/Nexus.API.Web/Nexus.API.Web.csproj" />
+    </Project>
+    <Project Path="tests/Nexus.API.IntegrationTests/Nexus.API.IntegrationTests.csproj">
+      <BuildDependency Project="src/Nexus.API.Infrastructure/Nexus.API.Infrastructure.csproj" />
+    </Project>
+    <Project Path="tests/Nexus.API.UnitTests/Nexus.API.UnitTests.csproj" />
+  </Folder>
+</Solution>

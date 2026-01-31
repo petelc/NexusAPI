@@ -9,7 +9,7 @@ namespace Nexus.Core.Aggregates.DocumentAggregate;
 /// </summary>
 public class DocumentVersion : EntityBase<Guid>
 {
-    public DocumentId DocumentId { get; private set; } = null!;
+    public DocumentId DocumentId { get; private set; }
     public int VersionNumber { get; private set; }
     public DocumentContent Content { get; private set; } = null!;
     public Guid CreatedBy { get; private set; }

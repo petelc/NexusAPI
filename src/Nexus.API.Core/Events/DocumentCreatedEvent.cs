@@ -6,4 +6,14 @@ namespace Nexus.Core.Events;
 /// <summary>
 /// Domain event raised when a document is created
 /// </summary>
-public record DocumentCreatedEvent(DocumentId DocumentId, Guid CreatedBy) : DomainEventBase;
+public class DocumentCreatedEvent : DomainEventBase
+{
+    public DocumentId DocumentId { get; init; }
+    public Guid CreatedBy { get; init; }
+
+    public DocumentCreatedEvent(DocumentId documentId, Guid createdBy)
+    {
+        DocumentId = documentId;
+        CreatedBy = createdBy;
+    }
+}

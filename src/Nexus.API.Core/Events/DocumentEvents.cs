@@ -6,24 +6,74 @@ namespace Nexus.Core.Events;
 /// <summary>
 /// Domain event raised when a document is updated
 /// </summary>
-public record DocumentUpdatedEvent(DocumentId DocumentId, Guid UpdatedBy) : DomainEventBase;
+public class DocumentUpdatedEvent : DomainEventBase
+{
+    public DocumentId DocumentId { get; init; }
+    public Guid UpdatedBy { get; init; }
+
+    public DocumentUpdatedEvent(DocumentId documentId, Guid updatedBy)
+    {
+        DocumentId = documentId;
+        UpdatedBy = updatedBy;
+    }
+}
 
 /// <summary>
 /// Domain event raised when a document is published
 /// </summary>
-public record DocumentPublishedEvent(DocumentId DocumentId, Guid PublishedBy) : DomainEventBase;
+public class DocumentPublishedEvent : DomainEventBase
+{
+    public DocumentId DocumentId { get; init; }
+    public Guid PublishedBy { get; init; }
+
+    public DocumentPublishedEvent(DocumentId documentId, Guid publishedBy)
+    {
+        DocumentId = documentId;
+        PublishedBy = publishedBy;
+    }
+}
 
 /// <summary>
 /// Domain event raised when a document is archived
 /// </summary>
-public record DocumentArchivedEvent(DocumentId DocumentId, Guid ArchivedBy) : DomainEventBase;
+public class DocumentArchivedEvent : DomainEventBase
+{
+    public DocumentId DocumentId { get; init; }
+    public Guid ArchivedBy { get; init; }
+
+    public DocumentArchivedEvent(DocumentId documentId, Guid archivedBy)
+    {
+        DocumentId = documentId;
+        ArchivedBy = archivedBy;
+    }
+}
 
 /// <summary>
 /// Domain event raised when a document is deleted
 /// </summary>
-public record DocumentDeletedEvent(DocumentId DocumentId, Guid DeletedBy) : DomainEventBase;
+public class DocumentDeletedEvent : DomainEventBase
+{
+    public DocumentId DocumentId { get; init; }
+    public Guid DeletedBy { get; init; }
+
+    public DocumentDeletedEvent(DocumentId documentId, Guid deletedBy)
+    {
+        DocumentId = documentId;
+        DeletedBy = deletedBy;
+    }
+}
 
 /// <summary>
 /// Domain event raised when a document is restored from deletion
 /// </summary>
-public record DocumentRestoredEvent(DocumentId DocumentId, Guid RestoredBy) : DomainEventBase;
+public class DocumentRestoredEvent : DomainEventBase
+{
+    public DocumentId DocumentId { get; init; }
+    public Guid RestoredBy { get; init; }
+
+    public DocumentRestoredEvent(DocumentId documentId, Guid restoredBy)
+    {
+        DocumentId = documentId;
+        RestoredBy = restoredBy;
+    }
+}

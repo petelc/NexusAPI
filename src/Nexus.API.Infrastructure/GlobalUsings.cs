@@ -1,7 +1,12 @@
-﻿global using System.Net.Mail;
+﻿global using System;
+global using System.Collections.Generic;
+global using System.Linq;
+global using System.Threading;
+global using System.Threading.Tasks;
+global using System.Net.Mail;
 global using System.Reflection;
 global using Ardalis.GuardClauses;
-global using Ardalis.SharedKernel;
+global using Traxs.SharedKernel;
 global using Ardalis.Specification.EntityFrameworkCore;
 global using MailKit.Net.Smtp;
 global using Microsoft.EntityFrameworkCore;

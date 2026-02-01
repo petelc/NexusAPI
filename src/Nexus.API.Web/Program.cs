@@ -21,6 +21,9 @@ builder.Services.AddFastEndpoints()
 
 var app = builder.Build();
 
+await app.Services.ApplyMigrationsAsync();
+await app.Services.InitializeExternalServicesAsync();
+
 await app.UseAppMiddlewareAndSeedDatabase();
 
 app.MapDefaultEndpoints(); // Aspire health checks and metrics

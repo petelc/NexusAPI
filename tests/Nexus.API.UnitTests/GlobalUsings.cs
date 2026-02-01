@@ -1,9 +1,4 @@
-﻿global using System.Runtime.CompilerServices;
-global using Ardalis.SharedKernel;
-global using Nexus.API.Core.ContributorAggregate;
-global using Nexus.API.UseCases.Contributors.Create;
-global using Shouldly;
-global using Mediator;
-global using Microsoft.Extensions.Logging;
-global using NSubstitute;
 global using Xunit;
+global using Traxs.SharedKernel;
+global using Nexus.API.Core.Aggregates;
+global using Nexus.API.UseCases.Documents;

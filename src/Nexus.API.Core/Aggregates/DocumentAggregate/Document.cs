@@ -1,11 +1,11 @@
 using Ardalis.GuardClauses;
-using Nexus.Core.Enums;
-using Nexus.Core.Events;
-using Nexus.Core.ValueObjects;
+using Nexus.API.Core.Enums;
+using Nexus.API.Core.Events;
+using Nexus.API.Core.ValueObjects;
 using Traxs.SharedKernel;
 // using Traxs.SharedKernel.Interfaces;
 
-namespace Nexus.Core.Aggregates.DocumentAggregate;
+namespace Nexus.API.Core.Aggregates.DocumentAggregate;
 
 /// <summary>
 /// Document aggregate root - represents a rich-text document with versioning

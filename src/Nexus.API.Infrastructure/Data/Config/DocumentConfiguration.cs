@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Nexus.Core.Aggregates.DocumentAggregate;
-using Nexus.Core.Enums;
+using Nexus.API.Core.Aggregates.DocumentAggregate;
+using Nexus.API.Core.Enums;
 
-namespace Nexus.Infrastructure.Data.Config;
+namespace Nexus.API.Infrastructure.Data.Config;
 
 /// <summary>
 /// Entity Framework configuration for Document aggregate root

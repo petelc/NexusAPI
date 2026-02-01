@@ -1,55 +1,56 @@
-using AutoMapper;
 using MediatR;
-using Nexus.Core.Aggregates.DocumentAggregate;
-using Nexus.Core.Interfaces;
-using Nexus.Core.ValueObjects;
-using Nexus.UseCases.Common.DTOs;
+using Nexus.API.Core.Aggregates.DocumentAggregate;
+using Nexus.API.Core.ValueObjects;
+using Nexus.API.Core.Interfaces;
 
-namespace Nexus.UseCases.Documents.Commands.CreateDocument;
+namespace Nexus.API.UseCases.Documents.Create;
 
 /// <summary>
-/// Handler for CreateDocumentCommand
+/// Handler for creating a new document
 /// </summary>
-public class CreateDocumentCommandHandler : IRequestHandler<CreateDocumentCommand, DocumentDto>
+public class CreateDocumentHandler : IRequestHandler<CreateDocumentCommand, CreateDocumentResponse>
 {
-    private readonly IDocumentRepository _documentRepository;
-    private readonly IMapper _mapper;
+  private readonly IDocumentRepository _repository;
 
-    public CreateDocumentCommandHandler(
-        IDocumentRepository documentRepository,
-        IMapper mapper)
+  public CreateDocumentHandler(IDocumentRepository repository)
+  {
+    _repository = repository;
+  }
+
+  public async Task<CreateDocumentResponse> Handle(
+    CreateDocumentCommand request,
+    CancellationToken cancellationToken)
+  {
+    // TODO: Get current user ID from HttpContext/Claims
+    // For now using placeholder - implement ICurrentUserService
+    var userId = new UserId(Guid.NewGuid());
+
+    // Create document aggregate using factory method
+    //var title = new Title(request.Title);
+    var title = Title.Create(request.Title);
+    //var content = new DocumentContent(request.Content); 
+    var content = DocumentContent.Create(request.Content);
+
+    var document = Document.Create(title, content, userId);
+
+    // Add tags if provided
+    foreach (var tagName in request.Tags)
     {
-        _documentRepository = documentRepository;
-        _mapper = mapper;
+      //var tag = new Tag(tagName);
+      var tag = Tag.Create(tagName);
+      document.AddTag(tag);
     }
 
-    public async Task<DocumentDto> Handle(CreateDocumentCommand request, CancellationToken cancellationToken)
+    // Save to repository
+    await _repository.AddAsync(document, cancellationToken);
+
+    return new CreateDocumentResponse
     {
-        // Create value objects
-        var title = Title.Create(request.Title);
-        var content = DocumentContent.Create(request.Content);
-
-        // Create the document aggregate
-        var document = Document.Create(
-            title,
-            content,
-            request.CreatedBy,
-            request.LanguageCode);
-
-        // Add tags if provided
-        if (request.Tags != null && request.Tags.Any())
-        {
-            foreach (var tagName in request.Tags)
-            {
-                var tag = Tag.Create(tagName);
-                document.AddTag(tag);
-            }
-        }
-
-        // Save to repository
-        var savedDocument = await _documentRepository.AddAsync(document, cancellationToken);
-
-        // Map to DTO and return
-        return _mapper.Map<DocumentDto>(savedDocument);
-    }
+      DocumentId = document.Id.Value,
+      Title = document.Title.Value,
+      Status = document.Status.ToString().ToLower(),
+      CreatedAt = document.CreatedAt,
+      CreatedBy = userId.Value.ToString()
+    };
+  }
 }

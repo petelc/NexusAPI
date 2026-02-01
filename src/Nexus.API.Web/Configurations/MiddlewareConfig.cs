@@ -1,87 +1,86 @@
-﻿using Ardalis.ListStartupServices;
-using Nexus.API.Infrastructure.Data;
-using Scalar.AspNetCore;
+using Microsoft.AspNetCore.Builder;
+using Serilog;
 
 namespace Nexus.API.Web.Configurations;
 
+/// <summary>
+/// Middleware configuration and pipeline setup
+/// </summary>
 public static class MiddlewareConfig
 {
-  public static async Task<IApplicationBuilder> UseAppMiddlewareAndSeedDatabase(this WebApplication app)
+  public static WebApplication ConfigureMiddleware(this WebApplication app)
   {
+    // Development-specific middleware
     if (app.Environment.IsDevelopment())
     {
       app.UseDeveloperExceptionPage();
-      app.UseShowAllServicesMiddleware(); // see https://github.com/ardalis/AspNetCoreStartupServices
+      
+      // Swagger in development only
+      app.UseSwagger();
+      app.UseSwaggerUI(c =>
+      {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Nexus API v1");
+        c.RoutePrefix = "swagger";
+        c.DocumentTitle = "Nexus API Documentation";
+        c.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.List);
+      });
     }
     else
-    {   
-      app.UseDefaultExceptionHandler(); // from FastEndpoints
+    {
+      // Production error handling
+      app.UseExceptionHandler("/error");
       app.UseHsts();
     }
 
-    app.UseFastEndpoints();
-
-    if (app.Environment.IsDevelopment())
+    // Security headers
+    app.Use(async (context, next) =>
     {
-      app.UseSwaggerGen(options =>
+      context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+      context.Response.Headers.Append("X-Frame-Options", "DENY");
+      context.Response.Headers.Append("X-XSS-Protection", "1; mode=block");
+      context.Response.Headers.Append("Referrer-Policy", "strict-origin-when-cross-origin");
+      await next();
+    });
+
+    // Request logging
+    app.UseSerilogRequestLogging(options =>
+    {
+      options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
+      options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
       {
-        options.Path = "/openapi/{documentName}.json";
-      });
-      app.MapScalarApiReference();
-    }
+        diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value);
+        diagnosticContext.Set("UserAgent", httpContext.Request.Headers.UserAgent);
+      };
+    });
 
-    app.UseHttpsRedirection(); // Note this will drop Authorization headers
+    // HTTPS redirection
+    app.UseHttpsRedirection();
 
-    // Run migrations and seed in Development or when explicitly requested via environment variable
-    var shouldMigrate = app.Environment.IsDevelopment() || 
-                        app.Configuration.GetValue<bool>("Database:ApplyMigrationsOnStartup");
-    
-    if (shouldMigrate)
+    // CORS
+    app.UseCors("NexusCorsPolicy");
+
+    // Authentication & Authorization
+    app.UseAuthentication();
+    app.UseAuthorization();
+
+    // Health checks
+    app.MapHealthChecks("/health");
+
+    // FastEndpoints
+    app.UseFastEndpoints(config =>
     {
-      await MigrateDatabaseAsync(app);
-      await SeedDatabaseAsync(app);
-    }
+      config.Endpoints.RoutePrefix = "api";
+      config.Endpoints.ShortNames = true;
+      config.Versioning.Prefix = "v";
+      config.Versioning.DefaultVersion = 1;
+    });
+
+    // NOTE: Database seeding removed - use migrations and separate seeding strategy
+    // For production, use: dotnet ef database update
+    // For development seeding, create a separate admin endpoint or CLI tool
+
+    Log.Information("Middleware pipeline configured successfully");
 
     return app;
-  }
-
-  static async Task MigrateDatabaseAsync(WebApplication app)
-  {
-    using var scope = app.Services.CreateScope();
-    var services = scope.ServiceProvider;
-    var logger = services.GetRequiredService<ILogger<Program>>();
-
-    try
-    {
-      logger.LogInformation("Applying database migrations...");
-      var context = services.GetRequiredService<AppDbContext>();
-      await context.Database.MigrateAsync();
-      logger.LogInformation("Database migrations applied successfully");
-    }
-    catch (Exception ex)
-    {
-      logger.LogError(ex, "An error occurred migrating the DB. {exceptionMessage}", ex.Message);
-      throw; // Re-throw to make startup fail if migrations fail
-    }
-  }
-
-  static async Task SeedDatabaseAsync(WebApplication app)
-  {
-    using var scope = app.Services.CreateScope();
-    var services = scope.ServiceProvider;
-    var logger = services.GetRequiredService<ILogger<Program>>();
-
-    try
-    {
-      logger.LogInformation("Seeding database...");
-      var context = services.GetRequiredService<AppDbContext>();
-      await SeedData.InitializeAsync(context);
-      logger.LogInformation("Database seeded successfully");
-    }
-    catch (Exception ex)
-    {
-      logger.LogError(ex, "An error occurred seeding the DB. {exceptionMessage}", ex.Message);
-      // Don't re-throw for seeding errors - it's not critical
-    }
   }
 }

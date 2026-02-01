@@ -1,4 +1,4 @@
-namespace Nexus.Core.Enums;
+namespace Nexus.API.Core.Enums;
 
 /// <summary>
 /// Represents the status of a document in its lifecycle
@@ -9,12 +9,12 @@ public enum DocumentStatus
     /// Document is being drafted and not yet published
     /// </summary>
     Draft = 0,
-    
+
     /// <summary>
     /// Document is published and visible to authorized users
     /// </summary>
     Published = 1,
-    
+
     /// <summary>
     /// Document has been archived
     /// </summary>

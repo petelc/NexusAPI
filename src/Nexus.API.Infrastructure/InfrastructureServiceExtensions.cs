@@ -7,7 +7,7 @@ using Nexus.API.Infrastructure.Data;
 using Nexus.API.Infrastructure.Data.Repositories;
 using Traxs.SharedKernel;
 
-namespace Nexus.Infrastructure;
+namespace Nexus.API.Infrastructure;
 
 /// <summary>
 /// Extension methods for registering Infrastructure services
@@ -48,7 +48,7 @@ public static class InfrastructureServiceExtensions
 
         // Repository Registration
         services.AddScoped<IDocumentRepository, DocumentRepository>();
-        services.AddScoped(typeof(IRepository<>), typeof(RepositoryBase<>));
+        services.AddScoped(typeof(IRepository<>), typeof(Nexus.API.Infrastructure.Data.RepositoryBase<>));
 
         // External Services (optional - only register if configured)
         AddExternalServices(services, configuration, logger);

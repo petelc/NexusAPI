@@ -1,7 +1,7 @@
-using Nexus.Core.Aggregates.DocumentAggregate;
+using Nexus.API.Core.Aggregates.DocumentAggregate;
 using Traxs.SharedKernel;
 
-namespace Nexus.Core.Interfaces;
+namespace Nexus.API.Core.Interfaces;
 
 /// <summary>
 /// Repository interface for Document aggregate
@@ -41,10 +41,10 @@ public interface IDocumentRepository : IRepository<Document>
     /// <summary>
     /// Update an existing document
     /// </summary>
-    new Task UpdateAsync(Document document, CancellationToken cancellationToken = default);
+    new Task<int> UpdateAsync(Document document, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Delete a document
     /// </summary>
-    new Task DeleteAsync(Document document, CancellationToken cancellationToken = default);
+    new Task<int> DeleteAsync(Document document, CancellationToken cancellationToken = default);
 }

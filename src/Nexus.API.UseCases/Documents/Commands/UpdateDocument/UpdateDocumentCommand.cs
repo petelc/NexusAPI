@@ -1,12 +1,12 @@
 using AutoMapper;
 using FluentValidation;
 using MediatR;
-using Nexus.Core.Aggregates.DocumentAggregate;
-using Nexus.Core.Interfaces;
-using Nexus.Core.ValueObjects;
-using Nexus.UseCases.Common.DTOs;
+using Nexus.API.Core.Aggregates.DocumentAggregate;
+using Nexus.API.Core.Interfaces;
+using Nexus.API.Core.ValueObjects;
+using Nexus.API.UseCases.Common.DTOs;
 
-namespace Nexus.UseCases.Documents.Commands.UpdateDocument;
+namespace Nexus.API.UseCases.Documents.Commands.UpdateDocument;
 
 /// <summary>
 /// Command to update an existing document

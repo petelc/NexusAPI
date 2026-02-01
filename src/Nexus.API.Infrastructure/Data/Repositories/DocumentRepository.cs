@@ -25,7 +25,7 @@ public class DocumentRepository : RepositoryBase<Document>, IDocumentRepository
   }
 
   public async Task<IEnumerable<Document>> GetByUserIdAsync(
-    UserId userId,
+    Guid userId,
     CancellationToken cancellationToken = default)
   {
     return await _dbContext.Documents
@@ -57,4 +57,16 @@ public class DocumentRepository : RepositoryBase<Document>, IDocumentRepository
       .OrderByDescending(d => d.UpdatedAt)
       .ToListAsync(cancellationToken);
   }
+
+  public async Task<IEnumerable<Document>> GetByTagAsync(
+    string tag,
+    CancellationToken cancellationToken = default)
+  {
+    return await _dbContext.Documents
+      .Include(d => d.Tags)
+      .Where(d => d.Tags.Any(t => t.Name == tag))
+      .OrderByDescending(d => d.UpdatedAt)
+      .ToListAsync(cancellationToken);
+  }
+
 }

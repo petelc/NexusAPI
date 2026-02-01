@@ -1,8 +1,8 @@
 using Ardalis.GuardClauses;
-using Nexus.Core.ValueObjects;
+using Nexus.API.Core.ValueObjects;
 using Traxs.SharedKernel;
 
-namespace Nexus.Core.Aggregates.DocumentAggregate;
+namespace Nexus.API.Core.Aggregates.DocumentAggregate;
 
 /// <summary>
 /// Represents a version snapshot of a document
@@ -16,10 +16,10 @@ public class DocumentVersion : EntityBase<Guid>
     public DateTime CreatedAt { get; private set; }
     public string ChangeDescription { get; private set; } = string.Empty;
     public string? ContentHash { get; private set; }
-    
+
     // Private constructor for EF Core
     private DocumentVersion() { }
-    
+
     /// <summary>
     /// Factory method to create a new document version
     /// </summary>
@@ -34,7 +34,7 @@ public class DocumentVersion : EntityBase<Guid>
         Guard.Against.NegativeOrZero(versionNumber, nameof(versionNumber));
         Guard.Against.Null(content, nameof(content));
         Guard.Against.Default(createdBy, nameof(createdBy));
-        
+
         var version = new DocumentVersion
         {
             Id = Guid.NewGuid(),
@@ -46,10 +46,10 @@ public class DocumentVersion : EntityBase<Guid>
             ChangeDescription = changeDescription ?? string.Empty,
             ContentHash = ComputeHash(content.RichText)
         };
-        
+
         return version;
     }
-    
+
     /// <summary>
     /// Compute SHA256 hash of content for deduplication
     /// </summary>

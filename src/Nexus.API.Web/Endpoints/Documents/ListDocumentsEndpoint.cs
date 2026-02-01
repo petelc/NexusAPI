@@ -1,59 +1,80 @@
 using FastEndpoints;
 using MediatR;
-using Nexus.UseCases.Documents.Queries.ListDocuments;
+using Nexus.API.UseCases.Documents.List;
 
-namespace Nexus.Web.Endpoints.Documents;
-
-/// <summary>
-/// Request model for listing documents
-/// </summary>
-public class ListDocumentsRequest
-{
-    public Guid? UserId { get; set; }
-    public string? Status { get; set; }
-    public int Page { get; set; } = 1;
-    public int PageSize { get; set; } = 20;
-    public string? SortBy { get; set; }
-    public string? SortOrder { get; set; }
-}
+namespace Nexus.API.Web.Endpoints.Documents;
 
 /// <summary>
-/// FastEndpoint for listing documents with pagination
+/// List documents endpoint with pagination and filtering
+/// GET /api/documents
 /// </summary>
-public class ListDocumentsEndpoint : Endpoint<ListDocumentsRequest, ListDocumentsResult>
+public class ListDocumentsEndpoint : EndpointWithoutRequest
 {
-    private readonly IMediator _mediator;
+  private readonly IMediator _mediator;
 
-    public ListDocumentsEndpoint(IMediator mediator)
+  public ListDocumentsEndpoint(IMediator mediator)
+  {
+    _mediator = mediator;
+  }
+
+  public override void Configure()
+  {
+    Get("/documents");
+    AllowAnonymous(); // TODO: Add authentication
+    
+    Description(b => b
+      .WithTags("Documents")
+      .WithSummary("List documents")
+      .WithDescription(@"
+Returns a paginated list of documents with filtering options.
+
+Query Parameters:
+- page: Page number (default: 1)
+- pageSize: Page size (default: 20, max: 100)
+- status: Filter by status (draft, published, archived)
+- collectionId: Filter by collection ID
+- tags: Comma-separated tag names
+- createdBy: Filter by creator user ID
+- sortBy: Sort field (createdAt, updatedAt, title)
+- sortOrder: Sort order (asc, desc)
+- search: Full-text search query
+
+Example: GET /documents?status=published&pageSize=50&search=api
+"));
+  }
+
+  public override async Task HandleAsync(CancellationToken ct)
+  {
+    // Get query parameters
+    var page = Query<int?>("page", isRequired: false) ?? 1;
+    var pageSize = Query<int?>("pageSize", isRequired: false) ?? 20;
+    var status = Query<string>("status", isRequired: false);
+    var collectionId = Query<Guid?>("collectionId", isRequired: false);
+    var tags = Query<string>("tags", isRequired: false);
+    var createdBy = Query<Guid?>("createdBy", isRequired: false);
+    var sortBy = Query<string>("sortBy", isRequired: false) ?? "updatedAt";
+    var sortOrder = Query<string>("sortOrder", isRequired: false) ?? "desc";
+    var search = Query<string>("search", isRequired: false);
+
+    // Validate page size
+    if (pageSize > 100) pageSize = 100;
+    if (pageSize < 1) pageSize = 20;
+
+    var query = new ListDocumentsQuery
     {
-        _mediator = mediator;
-    }
+      Page = page,
+      PageSize = pageSize,
+      Status = status,
+      CollectionId = collectionId,
+      Tags = tags,
+      CreatedBy = createdBy,
+      SortBy = sortBy,
+      SortOrder = sortOrder,
+      Search = search
+    };
 
-    public override void Configure()
-    {
-        Get("/api/v1/documents");
-        AllowAnonymous(); // TODO: Add authentication
-        Description(d => d
-            .WithName("ListDocuments")
-            .WithTags("Documents")
-            .Produces<ListDocumentsResult>(200)
-            .ProducesProblemDetails(400));
-    }
+    var result = await _mediator.Send(query, ct);
 
-    public override async Task HandleAsync(ListDocumentsRequest req, CancellationToken ct)
-    {
-        var query = new ListDocumentsQuery
-        {
-            UserId = req.UserId,
-            Status = req.Status,
-            Page = req.Page,
-            PageSize = req.PageSize,
-            SortBy = req.SortBy,
-            SortOrder = req.SortOrder
-        };
-
-        var result = await _mediator.Send(query, ct);
-
-        await SendOkAsync(result, ct);
-    }
+    await HttpContext.Response.WriteAsJsonAsync(result, ct);
+  }
 }

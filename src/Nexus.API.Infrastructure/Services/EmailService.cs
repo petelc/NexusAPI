@@ -3,7 +3,7 @@ using System.Net.Mail;
 using Nexus.API.Core.Interfaces;
 using SmtpClient = System.Net.Mail.SmtpClient;
 
-namespace Nexus.Infrastructure.Services;
+namespace Nexus.API.Infrastructure.Services;
 
 /// <summary>
 /// Email service for sending notifications and alerts.

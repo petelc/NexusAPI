@@ -1,9 +1,9 @@
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
-using Nexus.Core.Aggregates.DocumentAggregate;
+using Nexus.API.Core.Aggregates.DocumentAggregate;
 using Traxs.SharedKernel;
 
-namespace Nexus.Infrastructure.Data;
+namespace Nexus.API.Infrastructure.Data;
 
 /// <summary>
 /// Main application database context

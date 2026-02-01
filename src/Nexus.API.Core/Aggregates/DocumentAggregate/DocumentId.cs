@@ -1,4 +1,4 @@
-namespace Nexus.Core.Aggregates.DocumentAggregate;
+namespace Nexus.API.Core.Aggregates.DocumentAggregate;
 
 /// <summary>
 /// Strongly-typed identifier for Document aggregate

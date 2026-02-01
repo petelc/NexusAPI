@@ -1,4 +1,4 @@
-namespace Nexus.UseCases.Common.DTOs;
+namespace Nexus.API.UseCases.Common.DTOs;
 
 /// <summary>
 /// Data transfer object for Document

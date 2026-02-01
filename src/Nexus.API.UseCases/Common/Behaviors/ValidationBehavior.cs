@@ -1,7 +1,7 @@
 using FluentValidation;
 using MediatR;
 
-namespace Nexus.UseCases.Common.Behaviors;
+namespace Nexus.API.UseCases.Common.Behaviors;
 
 /// <summary>
 /// Pipeline behavior that validates requests using FluentValidation

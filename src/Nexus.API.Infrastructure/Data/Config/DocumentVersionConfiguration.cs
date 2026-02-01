@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Nexus.Core.Aggregates.DocumentAggregate;
+using Nexus.API.Core.Aggregates.DocumentAggregate;
 
-namespace Nexus.Infrastructure.Data.Config;
+namespace Nexus.API.Infrastructure.Data.Config;
 
 /// <summary>
 /// Entity Framework configuration for DocumentVersion entity
@@ -17,10 +17,10 @@ public class DocumentVersionConfiguration : IEntityTypeConfiguration<DocumentVer
         builder.HasKey(v => v.Id);
 
         // DocumentId (Foreign Key)
-        builder.Property("DocumentId")
+        builder.Property<DocumentId>("DocumentId")
             .HasConversion(
                 id => id.Value,
-                value => DocumentId.From(value))
+                value => new DocumentId(value))
             .IsRequired();
 
         // Value Objects - Content

@@ -1,16 +1,15 @@
 using MediatR;
-using Nexus.UseCases.Common.DTOs;
 
-namespace Nexus.UseCases.Documents.Commands.CreateDocument;
+namespace Nexus.API.UseCases.Documents.Create;
 
 /// <summary>
 /// Command to create a new document
 /// </summary>
-public record CreateDocumentCommand : IRequest<DocumentDto>
+public record CreateDocumentCommand : IRequest<CreateDocumentResponse>
 {
-    public string Title { get; init; } = string.Empty;
-    public string Content { get; init; } = string.Empty;
-    public Guid CreatedBy { get; init; }
-    public string? LanguageCode { get; init; }
-    public List<string>? Tags { get; init; }
+  public string Title { get; init; } = string.Empty;
+  public string Content { get; init; } = string.Empty;
+  public string Status { get; init; } = "draft";
+  public Guid? CollectionId { get; init; }
+  public List<string> Tags { get; init; } = new();
 }

@@ -1,9 +1,9 @@
 using FluentValidation;
 using MediatR;
-using Nexus.Core.Aggregates.DocumentAggregate;
-using Nexus.Core.Interfaces;
+using Nexus.API.Core.Aggregates.DocumentAggregate;
+using Nexus.API.Core.Interfaces;
 
-namespace Nexus.UseCases.Documents.Commands.DeleteDocument;
+namespace Nexus.API.UseCases.Documents.Commands.DeleteDocument;
 
 /// <summary>
 /// Command to delete (soft delete) a document

@@ -1,59 +1,52 @@
 using FastEndpoints;
 using MediatR;
-using Nexus.UseCases.Common.DTOs;
-using Nexus.UseCases.Documents.Queries.GetDocumentById;
+using Nexus.API.UseCases.Documents.Get;
 
-namespace Nexus.Web.Endpoints.Documents;
-
-/// <summary>
-/// Request model for getting a document by ID
-/// </summary>
-public class GetDocumentByIdRequest
-{
-    public Guid Id { get; set; }
-    public bool IncludeVersions { get; set; } = false;
-}
+namespace Nexus.API.Web.Endpoints.Documents;
 
 /// <summary>
-/// FastEndpoint for getting a document by ID
+/// Get document by ID endpoint
+/// GET /api/documents/{id}
 /// </summary>
-public class GetDocumentByIdEndpoint : Endpoint<GetDocumentByIdRequest, DocumentDto>
+public class GetDocumentByIdEndpoint : EndpointWithoutRequest
 {
-    private readonly IMediator _mediator;
+  private readonly IMediator _mediator;
 
-    public GetDocumentByIdEndpoint(IMediator mediator)
+  public GetDocumentByIdEndpoint(IMediator mediator)
+  {
+    _mediator = mediator;
+  }
+
+  public override void Configure()
+  {
+    Get("/documents/{id}");
+    AllowAnonymous(); // TODO: Add authentication
+    
+    Description(b => b
+      .WithTags("Documents")
+      .WithSummary("Get a document by ID")
+      .WithDescription("Retrieves a document by its unique identifier"));
+  }
+
+  public override async Task HandleAsync(CancellationToken ct)
+  {
+    var id = Route<Guid>("id");
+    
+    var query = new GetDocumentByIdQuery
     {
-        _mediator = mediator;
+      Id = id,
+      IncludePermissions = true
+    };
+
+    var result = await _mediator.Send(query, ct);
+
+    if (result == null)
+    {
+      HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+      await HttpContext.Response.WriteAsJsonAsync(new { Message = "Document not found" }, ct);
+      return;
     }
 
-    public override void Configure()
-    {
-        Get("/api/v1/documents/{id}");
-        AllowAnonymous(); // TODO: Add authentication
-        Description(d => d
-            .WithName("GetDocumentById")
-            .WithTags("Documents")
-            .Produces<DocumentDto>(200)
-            .ProducesProblemDetails(404)
-            .ProducesProblemDetails(500));
-    }
-
-    public override async Task HandleAsync(GetDocumentByIdRequest req, CancellationToken ct)
-    {
-        var query = new GetDocumentByIdQuery
-        {
-            DocumentId = req.Id,
-            IncludeVersions = req.IncludeVersions
-        };
-
-        var result = await _mediator.Send(query, ct);
-
-        if (result == null)
-        {
-            await SendNotFoundAsync(ct);
-            return;
-        }
-
-        await SendOkAsync(result, ct);
-    }
+    await HttpContext.Response.WriteAsJsonAsync(result, ct);
+  }
 }

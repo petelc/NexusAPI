@@ -1,55 +1,51 @@
 using FastEndpoints;
 using MediatR;
-using Nexus.UseCases.Common.DTOs;
-using Nexus.UseCases.Documents.Commands.PublishDocument;
+using Nexus.API.UseCases.Documents.Publish;
 
-namespace Nexus.Web.Endpoints.Documents;
-
-/// <summary>
-/// Request model for publishing a document
-/// </summary>
-public class PublishDocumentRequest
-{
-    public Guid Id { get; set; }
-}
+namespace Nexus.API.Web.Endpoints.Documents;
 
 /// <summary>
-/// FastEndpoint for publishing a document
+/// Publish document endpoint
+/// POST /api/documents/{id}/publish
 /// </summary>
-public class PublishDocumentEndpoint : Endpoint<PublishDocumentRequest, DocumentDto>
+public class PublishDocumentEndpoint : EndpointWithoutRequest
 {
-    private readonly IMediator _mediator;
+  private readonly IMediator _mediator;
 
-    public PublishDocumentEndpoint(IMediator mediator)
+  public PublishDocumentEndpoint(IMediator mediator)
+  {
+    _mediator = mediator;
+  }
+
+  public override void Configure()
+  {
+    Post("/documents/{id}/publish");
+    AllowAnonymous(); // TODO: Add authentication
+    
+    Description(b => b
+      .WithTags("Documents")
+      .WithSummary("Publish a document")
+      .WithDescription("Changes document status from draft to published"));
+  }
+
+  public override async Task HandleAsync(CancellationToken ct)
+  {
+    var id = Route<Guid>("id");
+    
+    var command = new PublishDocumentCommand
     {
-        _mediator = mediator;
-    }
+      Id = id
+    };
 
-    public override void Configure()
+    try
     {
-        Post("/api/v1/documents/{id}/publish");
-        AllowAnonymous(); // TODO: Add authentication
-        Description(d => d
-            .WithName("PublishDocument")
-            .WithTags("Documents")
-            .Produces<DocumentDto>(200)
-            .ProducesProblemDetails(404)
-            .ProducesProblemDetails(400));
+      var result = await _mediator.Send(command, ct);
+      await HttpContext.Response.WriteAsJsonAsync(result, ct);
     }
-
-    public override async Task HandleAsync(PublishDocumentRequest req, CancellationToken ct)
+    catch (InvalidOperationException ex)
     {
-        // TODO: Get user ID from claims
-        var userId = Guid.NewGuid();
-
-        var command = new PublishDocumentCommand
-        {
-            DocumentId = req.Id,
-            PublishedBy = userId
-        };
-
-        var result = await _mediator.Send(command, ct);
-
-        await SendOkAsync(result, ct);
+      HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+      await HttpContext.Response.WriteAsJsonAsync(new { Message = ex.Message }, ct);
     }
+  }
 }

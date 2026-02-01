@@ -3,7 +3,7 @@ using Azure.Storage.Blobs.Models;
 using Nexus.API.Core.Interfaces;
 using Nexus.API.Core.Models;
 
-namespace Nexus.Infrastructure.Services;
+namespace Nexus.API.Infrastructure.Services;
 
 /// <summary>
 /// Azure Blob Storage service for managing file uploads and downloads.

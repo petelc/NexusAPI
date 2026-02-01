@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Nexus.Core.Aggregates.DocumentAggregate;
+using Nexus.API.Core.Aggregates.DocumentAggregate;
 
-namespace Nexus.Infrastructure.Data.Config;
+namespace Nexus.API.Infrastructure.Data.Config;
 
 /// <summary>
 /// Entity Framework configuration for Tag entity

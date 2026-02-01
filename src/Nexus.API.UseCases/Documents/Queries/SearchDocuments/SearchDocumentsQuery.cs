@@ -1,10 +1,10 @@
 using AutoMapper;
 using FluentValidation;
 using MediatR;
-using Nexus.Core.Interfaces;
-using Nexus.UseCases.Common.DTOs;
+using Nexus.API.Core.Interfaces;
+using Nexus.API.UseCases.Common.DTOs;
 
-namespace Nexus.UseCases.Documents.Queries.SearchDocuments;
+namespace Nexus.API.UseCases.Documents.Queries.SearchDocuments;
 
 /// <summary>
 /// Query to search documents by text

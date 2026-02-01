@@ -1,8 +1,8 @@
 using AutoMapper;
-using Nexus.Core.Aggregates.DocumentAggregate;
-using Nexus.UseCases.Common.DTOs;
+using Nexus.API.Core.Aggregates.DocumentAggregate;
+using Nexus.API.UseCases.Common.DTOs;
 
-namespace Nexus.UseCases.Common.Mappings;
+namespace Nexus.API.UseCases.Common.Mappings;
 
 /// <summary>
 /// AutoMapper profile for Document mappings

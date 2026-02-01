@@ -1,7 +1,7 @@
-﻿using Ardalis.SharedKernel;
-using Nexus.API.Core.ContributorAggregate;
+﻿using Traxs.SharedKernel;
+
 using Nexus.API.Infrastructure;
-using Nexus.API.UseCases.Contributors.Create;
+
 
 namespace Nexus.API.Web.Configurations;
 
@@ -20,8 +20,7 @@ public static class MediatorConfig
       // Supply any TYPE from each assembly you want scanned (the generator finds the assembly from the type)
       options.Assemblies =
       [
-        typeof(Contributor),                       // Core
-        typeof(CreateContributorCommand),         // UseCases
+        // UseCases
         typeof(InfrastructureServiceExtensions), // Infrastructure
         typeof(MediatorConfig)                  // Web
       ];

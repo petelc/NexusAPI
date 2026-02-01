@@ -1,7 +1,7 @@
-using Nexus.Core.Aggregates.DocumentAggregate;
+using Nexus.API.Core.Aggregates.DocumentAggregate;
 using Traxs.SharedKernel;
 
-namespace Nexus.Core.Events;
+namespace Nexus.API.Core.Events;
 
 /// <summary>
 /// Domain event raised when a document is created

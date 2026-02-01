@@ -3,7 +3,7 @@ using System.Text.Json;
 using Nexus.API.Core.Interfaces;
 using Nexus.API.Core.Models;
 
-namespace Nexus.Infrastructure.Services;
+namespace Nexus.API.Infrastructure.Services;
 
 /// <summary>
 /// Redis caching service for distributed caching and performance optimization.
@@ -48,7 +48,7 @@ public class RedisCacheService : ICacheService
       }
 
       _logger.LogDebug("Cache hit for key: {Key}", key);
-      return JsonSerializer.Deserialize<T>(value!, _jsonOptions);
+      return JsonSerializer.Deserialize<T>((string)value!, _jsonOptions);
     }
     catch (Exception ex)
     {
@@ -387,7 +387,7 @@ public class RedisCacheService : ICacheService
         {
           try
           {
-            var deserialized = JsonSerializer.Deserialize<T>(message!, _jsonOptions);
+            var deserialized = JsonSerializer.Deserialize<T>(message.ToString()!, _jsonOptions);
             if (deserialized != null)
             {
               handler(deserialized);
@@ -417,11 +417,13 @@ public class RedisCacheService : ICacheService
       var server = _redis.GetServer(_redis.GetEndPoints().First());
       var info = await server.InfoAsync("stats");
 
+      var statsDict = info.SelectMany(g => g).ToDictionary(x => x.Key, x => x.Value);
+
       var stats = new CacheStatistics
       {
         TotalKeys = (await server.DatabaseSizeAsync()),
-        Hits = long.Parse(info.First(x => x.Key == "keyspace_hits").Value),
-        Misses = long.Parse(info.First(x => x.Key == "keyspace_misses").Value)
+        Hits = statsDict.ContainsKey("keyspace_hits") ? long.Parse(statsDict["keyspace_hits"]) : 0,
+        Misses = statsDict.ContainsKey("keyspace_misses") ? long.Parse(statsDict["keyspace_misses"]) : 0
       };
 
       stats.HitRate = stats.Hits + stats.Misses > 0

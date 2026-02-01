@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -5,6 +6,8 @@ using Microsoft.Extensions.Logging;
 using Nexus.API.Core.Interfaces;
 using Nexus.API.Infrastructure.Data;
 using Nexus.API.Infrastructure.Data.Repositories;
+using Nexus.API.Infrastructure.Repositories;
+using Nexus.API.Infrastructure.Services;
 using Traxs.SharedKernel;
 
 namespace Nexus.API.Infrastructure;
@@ -49,6 +52,9 @@ public static class InfrastructureServiceExtensions
         // Repository Registration
         services.AddScoped<IDocumentRepository, DocumentRepository>();
         services.AddScoped(typeof(IRepository<>), typeof(Nexus.API.Infrastructure.Data.RepositoryBase<>));
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
+        services.AddHttpContextAccessor(); // Required for CurrentUserService
 
         // External Services (optional - only register if configured)
         AddExternalServices(services, configuration, logger);

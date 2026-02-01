@@ -28,10 +28,10 @@ public class PublishDocumentHandler : IRequestHandler<PublishDocumentCommand, Pu
       throw new InvalidOperationException($"Document {request.Id} not found");
 
     // TODO: Get current user ID from HttpContext/Claims
-    var userId = UserId.Create(Guid.NewGuid());
+    var userId = UserId.CreateNew();
 
     // Publish the document
-    document.Publish(userId);
+    document.Publish(userId.Value);
 
     // Save changes
     await _repository.UpdateAsync(document, cancellationToken);

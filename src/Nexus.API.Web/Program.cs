@@ -3,6 +3,10 @@ using FastEndpoints.Swagger;
 using Nexus.API.Infrastructure;
 using Nexus.API.Web.Configurations;
 using Serilog;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,34 +19,74 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
+// Create Microsoft.Extensions.Logging.ILogger from the logger factory
+using var loggerFactory = LoggerFactory.Create(loggingBuilder => loggingBuilder.AddSerilog());
+var logger = loggerFactory.CreateLogger<Program>();
+
 // Add services
-builder.Services.AddInfrastructureServices(builder.Configuration, Log.Logger);
+builder.Services.AddInfrastructureServices(builder.Configuration, logger);
+
+// Add CORS
+builder.Services.AddCors(options =>
+{
+  options.AddPolicy("NexusCorsPolicy", policy =>
+  {
+    policy.WithOrigins(builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? new[] { "http://localhost:3000" })
+          .AllowAnyMethod()
+          .AllowAnyHeader()
+          .AllowCredentials();
+  });
+});
+
+// Add Authentication & Authorization with JWT
+builder.Services.AddAuthentication(options =>
+{
+  options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+  options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+  options.TokenValidationParameters = new TokenValidationParameters
+  {
+    ValidateIssuer = true,
+    ValidateAudience = true,
+    ValidateLifetime = true,
+    ValidateIssuerSigningKey = true,
+    ValidIssuer = builder.Configuration["Jwt:Issuer"],
+    ValidAudience = builder.Configuration["Jwt:Audience"],
+    IssuerSigningKey = new SymmetricSecurityKey(
+      Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key not configured")))
+  };
+});
+
+builder.Services.AddAuthorization();
+
+// Add Health Checks
+builder.Services.AddHealthChecks();
+
+// FastEndpoints and Swagger
 builder.Services.AddFastEndpoints();
-builder.Services.AddSwaggerDoc();
+builder.Services.SwaggerDocument(o =>
+{
+  o.DocumentSettings = s =>
+  {
+    s.Title = "Nexus API";
+    s.Version = "v1";
+  };
+});
 
 var app = builder.Build();
 
 // Configure middleware pipeline
 app.ConfigureMiddleware();
 
-// NOTE: Removed auto-migration and initialization
-// For production: Use manual migrations via "dotnet ef database update"
-// For development: Migrations run automatically in docker-compose setup
-//
-// If you need to run migrations on startup (NOT recommended for production):
-// using (var scope = app.Services.CreateScope())
-// {
-//     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-//     await dbContext.Database.MigrateAsync();
-// }
-
 try
 {
   Log.Information("Starting Nexus API...");
   Log.Information("Environment: {Environment}", app.Environment.EnvironmentName);
-  
+
   await app.RunAsync();
-  
+
   Log.Information("Nexus API stopped gracefully");
   return 0;
 }
@@ -55,3 +99,5 @@ finally
 {
   await Log.CloseAndFlushAsync();
 }
+
+public partial class Program { }

@@ -6,6 +6,7 @@
     <PackageReference Include="Ardalis.Specification.EntityFrameworkCore" />
     <PackageReference Include="Azure.Identity" />
     <PackageReference Include="MailKit" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" 
                       ExcludeAssets="contentFiles" PrivateAssets="all" />

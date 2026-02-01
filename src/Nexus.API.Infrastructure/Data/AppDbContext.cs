@@ -1,6 +1,8 @@
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Nexus.API.Core.Aggregates.DocumentAggregate;
+using Nexus.API.Core.Aggregates.UserAggregate;
+using Nexus.API.Infrastructure.Data.Config;
 using Traxs.SharedKernel;
 
 namespace Nexus.API.Infrastructure.Data;
@@ -18,6 +20,7 @@ public class AppDbContext : DbContext
     public DbSet<Document> Documents => Set<Document>();
     public DbSet<DocumentVersion> DocumentVersions => Set<DocumentVersion>();
     public DbSet<Tag> Tags => Set<Tag>();
+    public DbSet<User> Users => Set<User>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -25,6 +28,7 @@ public class AppDbContext : DbContext
 
         // Apply all configurations from this assembly
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+        modelBuilder.ApplyConfiguration(new UserConfiguration());
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

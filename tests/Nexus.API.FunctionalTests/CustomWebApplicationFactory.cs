@@ -1,6 +1,11 @@
 ﻿using Nexus.API.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Testcontainers.MsSql;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Nexus.API.FunctionalTests;
 
@@ -50,9 +55,9 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
       {
         // Apply migrations to create the database schema
         db.Database.Migrate();
-        
+
         // Seed the database with test data.
-        SeedData.PopulateTestDataAsync(db).Wait();
+        //SeedData.PopulateTestDataAsync(db).Wait();
       }
       catch (Exception ex)
       {

@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Serilog;
+using FastEndpoints;
+using FastEndpoints.Swagger;
 
 namespace Nexus.API.Web.Configurations;
 
@@ -14,16 +16,6 @@ public static class MiddlewareConfig
     if (app.Environment.IsDevelopment())
     {
       app.UseDeveloperExceptionPage();
-      
-      // Swagger in development only
-      app.UseSwagger();
-      app.UseSwaggerUI(c =>
-      {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Nexus API v1");
-        c.RoutePrefix = "swagger";
-        c.DocumentTitle = "Nexus API Documentation";
-        c.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.List);
-      });
     }
     else
     {
@@ -48,8 +40,12 @@ public static class MiddlewareConfig
       options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
       options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
       {
-        diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value);
-        diagnosticContext.Set("UserAgent", httpContext.Request.Headers.UserAgent);
+        diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value ?? "unknown");
+        var userAgent = httpContext.Request.Headers.UserAgent.ToString();
+        if (!string.IsNullOrEmpty(userAgent))
+        {
+          diagnosticContext.Set("UserAgent", userAgent);
+        }
       };
     });
 
@@ -75,9 +71,11 @@ public static class MiddlewareConfig
       config.Versioning.DefaultVersion = 1;
     });
 
-    // NOTE: Database seeding removed - use migrations and separate seeding strategy
-    // For production, use: dotnet ef database update
-    // For development seeding, create a separate admin endpoint or CLI tool
+    // Swagger (FastEndpoints version) - available in all environments
+    if (app.Environment.IsDevelopment())
+    {
+      app.UseSwaggerGen();
+    }
 
     Log.Information("Middleware pipeline configured successfully");
 

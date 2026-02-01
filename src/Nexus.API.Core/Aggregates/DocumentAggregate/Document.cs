@@ -184,6 +184,22 @@ public class Document : EntityBase<DocumentId>, IAggregateRoot
     }
 
     /// <summary>
+    /// Check if a user can edit this document
+    /// </summary>
+    public bool CanEdit(UserId userId)
+    {
+        if (IsDeleted || Status == DocumentStatus.Archived)
+            return false;
+
+        // Owner can always edit
+        if (CreatedBy == userId.Value)
+            return true;
+
+        // TODO: Add permission checks based on collaboration settings
+        return false;
+    }
+
+    /// <summary>
     /// Create a version snapshot of the current content
     /// </summary>
     private void CreateVersion()

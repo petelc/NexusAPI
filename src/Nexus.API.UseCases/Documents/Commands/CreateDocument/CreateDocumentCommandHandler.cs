@@ -11,10 +11,12 @@ namespace Nexus.API.UseCases.Documents.Create;
 public class CreateDocumentHandler : IRequestHandler<CreateDocumentCommand, CreateDocumentResponse>
 {
   private readonly IDocumentRepository _repository;
+  private readonly ICurrentUserService _currentUserService;
 
-  public CreateDocumentHandler(IDocumentRepository repository)
+  public CreateDocumentHandler(IDocumentRepository repository, ICurrentUserService currentUserService)
   {
     _repository = repository;
+    _currentUserService = currentUserService;
   }
 
   public async Task<CreateDocumentResponse> Handle(
@@ -23,7 +25,7 @@ public class CreateDocumentHandler : IRequestHandler<CreateDocumentCommand, Crea
   {
     // TODO: Get current user ID from HttpContext/Claims
     // For now using placeholder - implement ICurrentUserService
-    var userId = new UserId(Guid.NewGuid());
+    var userId = _currentUserService.GetRequiredUserId();
 
     // Create document aggregate using factory method
     //var title = new Title(request.Title);

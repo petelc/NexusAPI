@@ -11,10 +11,12 @@ namespace Nexus.API.UseCases.Documents.Get;
 public class GetDocumentByIdHandler : IRequestHandler<GetDocumentByIdQuery, GetDocumentByIdResponse?>
 {
   private readonly IDocumentRepository _repository;
+  private readonly ICurrentUserService _currentUserService;
 
-  public GetDocumentByIdHandler(IDocumentRepository repository)
+  public GetDocumentByIdHandler(IDocumentRepository repository, ICurrentUserService currentUserService)
   {
     _repository = repository;
+    _currentUserService = currentUserService;
   }
 
   public async Task<GetDocumentByIdResponse?> Handle(
@@ -27,8 +29,8 @@ public class GetDocumentByIdHandler : IRequestHandler<GetDocumentByIdQuery, GetD
     if (document == null)
       return null;
 
-    // TODO: Check permissions for current user
-    var userId = Guid.NewGuid(); // Placeholder - get from HttpContext
+
+    var userId = _currentUserService.GetRequiredUserId();
 
     return new GetDocumentByIdResponse
     {

@@ -11,10 +11,12 @@ namespace Nexus.API.UseCases.Documents.Publish;
 public class PublishDocumentHandler : IRequestHandler<PublishDocumentCommand, PublishDocumentResponse>
 {
   private readonly IDocumentRepository _repository;
+  private readonly ICurrentUserService _currentUserService;
 
-  public PublishDocumentHandler(IDocumentRepository repository)
+  public PublishDocumentHandler(IDocumentRepository repository, ICurrentUserService currentUserService)
   {
     _repository = repository;
+    _currentUserService = currentUserService;
   }
 
   public async Task<PublishDocumentResponse> Handle(
@@ -27,8 +29,8 @@ public class PublishDocumentHandler : IRequestHandler<PublishDocumentCommand, Pu
     if (document == null)
       throw new InvalidOperationException($"Document {request.Id} not found");
 
-    // TODO: Get current user ID from HttpContext/Claims
-    var userId = UserId.CreateNew();
+
+    var userId = _currentUserService.GetRequiredUserId();
 
     // Publish the document
     document.Publish(userId.Value);

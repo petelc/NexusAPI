@@ -1,13 +1,21 @@
 using FastEndpoints;
 using FastEndpoints.Swagger;
 using Nexus.API.Infrastructure;
-using Nexus.API.Web.Configurations;
 using Nexus.API.UseCases;
+using Nexus.API.Web.Configurations;
 using Serilog;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using Microsoft.Extensions.Logging;
+using System.Text;
+using Nexus.API.Infrastructure.Data;
+using Nexus.API.Infrastructure.Identity;
+using Ardalis.Specification;
+using Nexus.API.Infrastructure.Services;
+using Traxs.SharedKernel;
+using Nexus.API.Core.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,9 +32,41 @@ builder.Host.UseSerilog();
 using var loggerFactory = LoggerFactory.Create(loggingBuilder => loggingBuilder.AddSerilog());
 var logger = loggerFactory.CreateLogger<Program>();
 
-// Add services
+// Add Infrastructure services (includes DbContext, Repositories, etc.)
 builder.Services.AddInfrastructureServices(builder.Configuration, logger);
-builder.Services.AddUseCasesServices();  // Add this line
+
+// Add UseCases services (includes MediatR and AutoMapper)
+builder.Services.AddUseCasesServices();
+
+// Identity DbContext (authentication)
+builder.Services.AddDbContext<IdentityDbContext>(options =>
+  options.UseSqlServer(
+    builder.Configuration.GetConnectionString("IdentityConnection") ?? builder.Configuration.GetConnectionString("DefaultConnection"),
+    b => b.MigrationsAssembly("Nexus.API.Infrastructure")));
+
+// Add ASP.NET Core Identity
+builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
+{
+  // Password settings
+  options.Password.RequireDigit = true;
+  options.Password.RequireLowercase = true;
+  options.Password.RequireUppercase = true;
+  options.Password.RequireNonAlphanumeric = true;
+  options.Password.RequiredLength = 8;
+
+  // Lockout settings
+  options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+  options.Lockout.MaxFailedAccessAttempts = 5;
+  options.Lockout.AllowedForNewUsers = true;
+
+  // User settings
+  options.User.RequireUniqueEmail = true;
+
+  // Email confirmation (disabled for now)
+  options.SignIn.RequireConfirmedEmail = false;
+})
+.AddEntityFrameworkStores<IdentityDbContext>()
+.AddDefaultTokenProviders();
 
 // Add CORS
 builder.Services.AddCors(options =>
@@ -63,6 +103,17 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
+// Register Application Services
+// Repository pattern - using Traxs.SharedKernel
+builder.Services.AddScoped(typeof(IRepositoryBase<>), typeof(EfRepositoryBase<>));
+builder.Services.AddScoped(typeof(IReadRepositoryBase<>), typeof(EfRepositoryBase<>));
+
+// Domain Event Dispatcher
+builder.Services.AddScoped<IDomainEventDispatcher, MediatRDomainEventDispatcher>();
+
+// JWT Token Service
+builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+
 // Add Health Checks
 builder.Services.AddHealthChecks();
 
@@ -71,11 +122,12 @@ builder.Services.AddFastEndpoints();
 builder.Services.SwaggerDocument(o =>
 {
   o.MaxEndpointVersion = 1;
+  o.AutoTagPathSegmentIndex = 0;
   o.DocumentSettings = s =>
   {
     s.Title = "Nexus API";
     s.Version = "v1";
-    s.Description = "A production-ready  SaaS platform with authentication";
+    s.Description = "A production-ready SaaS platform with authentication";
   };
 });
 

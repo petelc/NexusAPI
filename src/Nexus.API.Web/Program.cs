@@ -68,59 +68,14 @@ builder.Services.AddHealthChecks();
 
 // FastEndpoints and Swagger
 builder.Services.AddFastEndpoints();
-// .SwaggerDocument(o =>
-//     {
-//       o.ShortSchemaNames = true;
-
-//       o.DocumentSettings = settings =>
-//       {
-//         settings.Title = "NEXUS API";
-//         settings.Version = "v1";
-//         settings.Description = "A production-ready  SaaS platform with authentication";
-
-//         settings.PostProcess = document =>
-//           {
-//             document.Servers.Clear();
-
-//             // document.Servers.Add(new NSwag.OpenApiServer
-//             // {
-//             //   Url = "https://localhost:5000",
-//             //   Description = "Acme Tenant"
-//             // });
-
-//             document.Servers.Add(new NSwag.OpenApiServer
-//             {
-//               Url = "https://localhost:57679",
-//               Description = "Base URL"
-//             });
-//           };
-//       };
-//     });
 builder.Services.SwaggerDocument(o =>
 {
+  o.MaxEndpointVersion = 1;
   o.DocumentSettings = s =>
   {
     s.Title = "Nexus API";
     s.Version = "v1";
     s.Description = "A production-ready  SaaS platform with authentication";
-
-
-    s.PostProcess = document =>
-      {
-        document.Servers.Clear();
-
-        // document.Servers.Add(new NSwag.OpenApiServer
-        // {
-        //   Url = "https://localhost:5000",
-        //   Description = "Acme Tenant"
-        // });
-
-        document.Servers.Add(new NSwag.OpenApiServer
-        {
-          Url = "https://localhost:57679",
-          Description = "Base URL"
-        });
-      };
   };
 });
 

@@ -21,7 +21,7 @@ public class CreateDocumentEndpoint : Endpoint<CreateDocumentCommand>
   {
     Post("/documents");
     AllowAnonymous(); // TODO: Add authentication
-    
+
     Description(b => b
       .WithTags("Documents")
       .WithSummary("Create a new document")

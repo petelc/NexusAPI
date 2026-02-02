@@ -2,6 +2,7 @@ using FastEndpoints;
 using FastEndpoints.Swagger;
 using Nexus.API.Infrastructure;
 using Nexus.API.Web.Configurations;
+using Nexus.API.UseCases;
 using Serilog;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -25,6 +26,7 @@ var logger = loggerFactory.CreateLogger<Program>();
 
 // Add services
 builder.Services.AddInfrastructureServices(builder.Configuration, logger);
+builder.Services.AddUseCasesServices();  // Add this line
 
 // Add CORS
 builder.Services.AddCors(options =>
@@ -66,12 +68,59 @@ builder.Services.AddHealthChecks();
 
 // FastEndpoints and Swagger
 builder.Services.AddFastEndpoints();
+// .SwaggerDocument(o =>
+//     {
+//       o.ShortSchemaNames = true;
+
+//       o.DocumentSettings = settings =>
+//       {
+//         settings.Title = "NEXUS API";
+//         settings.Version = "v1";
+//         settings.Description = "A production-ready  SaaS platform with authentication";
+
+//         settings.PostProcess = document =>
+//           {
+//             document.Servers.Clear();
+
+//             // document.Servers.Add(new NSwag.OpenApiServer
+//             // {
+//             //   Url = "https://localhost:5000",
+//             //   Description = "Acme Tenant"
+//             // });
+
+//             document.Servers.Add(new NSwag.OpenApiServer
+//             {
+//               Url = "https://localhost:57679",
+//               Description = "Base URL"
+//             });
+//           };
+//       };
+//     });
 builder.Services.SwaggerDocument(o =>
 {
   o.DocumentSettings = s =>
   {
     s.Title = "Nexus API";
     s.Version = "v1";
+    s.Description = "A production-ready  SaaS platform with authentication";
+
+
+    s.PostProcess = document =>
+      {
+        document.Servers.Clear();
+
+        // document.Servers.Add(new NSwag.OpenApiServer
+        // {
+        //   Url = "https://localhost:5000",
+        //   Description = "Acme Tenant"
+        // });
+
+        document.Servers.Add(new NSwag.OpenApiServer
+        {
+          Url = "https://localhost:57679",
+          Description = "Base URL"
+        });
+      };
   };
 });
 

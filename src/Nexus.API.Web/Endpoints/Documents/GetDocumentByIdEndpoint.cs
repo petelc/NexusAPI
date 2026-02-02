@@ -21,7 +21,7 @@ public class GetDocumentByIdEndpoint : EndpointWithoutRequest
   {
     Get("/documents/{id}");
     AllowAnonymous(); // TODO: Add authentication
-    
+
     Description(b => b
       .WithTags("Documents")
       .WithSummary("Get a document by ID")
@@ -31,7 +31,7 @@ public class GetDocumentByIdEndpoint : EndpointWithoutRequest
   public override async Task HandleAsync(CancellationToken ct)
   {
     var id = Route<Guid>("id");
-    
+
     var query = new GetDocumentByIdQuery
     {
       Id = id,

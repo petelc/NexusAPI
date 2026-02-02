@@ -21,7 +21,7 @@ public class ListDocumentsEndpoint : EndpointWithoutRequest
   {
     Get("/documents");
     AllowAnonymous(); // TODO: Add authentication
-    
+
     Description(b => b
       .WithTags("Documents")
       .WithSummary("List documents")

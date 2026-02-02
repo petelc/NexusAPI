@@ -6,7 +6,7 @@ namespace Nexus.API.Web.Endpoints.Documents;
 
 /// <summary>
 /// Publish document endpoint
-/// POST /api/documents/{id}/publish
+/// POST /documents/{id}/publish
 /// </summary>
 public class PublishDocumentEndpoint : EndpointWithoutRequest
 {
@@ -21,7 +21,7 @@ public class PublishDocumentEndpoint : EndpointWithoutRequest
   {
     Post("/documents/{id}/publish");
     AllowAnonymous(); // TODO: Add authentication
-    
+
     Description(b => b
       .WithTags("Documents")
       .WithSummary("Publish a document")
@@ -31,7 +31,7 @@ public class PublishDocumentEndpoint : EndpointWithoutRequest
   public override async Task HandleAsync(CancellationToken ct)
   {
     var id = Route<Guid>("id");
-    
+
     var command = new PublishDocumentCommand
     {
       Id = id

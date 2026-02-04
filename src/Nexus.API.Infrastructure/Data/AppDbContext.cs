@@ -2,6 +2,7 @@ using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Nexus.API.Core.Aggregates.DocumentAggregate;
 using Nexus.API.Core.Aggregates.UserAggregate;
+using Nexus.API.Core.Entities;
 using Nexus.API.Infrastructure.Data.Config;
 using Traxs.SharedKernel;
 
@@ -22,6 +23,9 @@ public class AppDbContext : DbContext
     public DbSet<Tag> Tags => Set<Tag>();
     public DbSet<User> Users => Set<User>();
 
+    // Add RefreshToken DbSet
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -29,6 +33,9 @@ public class AppDbContext : DbContext
         // Apply all configurations from this assembly
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         modelBuilder.ApplyConfiguration(new UserConfiguration());
+
+        // Add RefreshToken configuration
+        modelBuilder.ApplyConfiguration(new RefreshTokenConfiguration());
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

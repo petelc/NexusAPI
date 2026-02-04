@@ -16,6 +16,7 @@ using Ardalis.Specification;
 using Nexus.API.Infrastructure.Services;
 using Traxs.SharedKernel;
 using Nexus.API.Core.Interfaces;
+using Nexus.API.Infrastructure.Data.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -111,8 +112,21 @@ builder.Services.AddScoped(typeof(IReadRepositoryBase<>), typeof(EfRepositoryBas
 // Domain Event Dispatcher
 builder.Services.AddScoped<IDomainEventDispatcher, MediatRDomainEventDispatcher>();
 
-// JWT Token Service
+// Add RefreshToken repository
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+
+// Add RefreshToken repository
+builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+
+// Add Code Snippet repository
+builder.Services.AddScoped<ICodeSnippetRepository, CodeSnippetRepository>();
+
+// Add Tag repository
+builder.Services.AddScoped<ITagRepository, TagRepository>();
+
+// Add UrlEncoder for 2FA QR code generation
+builder.Services.AddSingleton<System.Text.Encodings.Web.UrlEncoder>(
+  System.Text.Encodings.Web.UrlEncoder.Default);
 
 // Add Health Checks
 builder.Services.AddHealthChecks();
@@ -132,6 +146,12 @@ builder.Services.SwaggerDocument(o =>
 });
 
 var app = builder.Build();
+
+// Seed database
+using (var scope = app.Services.CreateScope())
+{
+  await SeedData.InitializeAsync(scope.ServiceProvider);
+}
 
 // Configure middleware pipeline
 app.ConfigureMiddleware();

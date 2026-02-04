@@ -1,5 +1,6 @@
 using FastEndpoints;
 using Microsoft.AspNetCore.Identity;
+using Nexus.API.Core.Entities;
 using Nexus.API.Core.Interfaces;
 using Nexus.API.Infrastructure.Identity;
 using Nexus.API.UseCases.Auth.DTOs;
@@ -15,15 +16,18 @@ public class LoginEndpoint : Endpoint<LoginRequestDto, AuthResponseDto>
   private readonly UserManager<ApplicationUser> _userManager;
   private readonly SignInManager<ApplicationUser> _signInManager;
   private readonly IJwtTokenService _jwtTokenService;
+  private readonly IRefreshTokenRepository _refreshTokenRepository;
 
   public LoginEndpoint(
     UserManager<ApplicationUser> userManager,
     SignInManager<ApplicationUser> signInManager,
-    IJwtTokenService jwtTokenService)
+    IJwtTokenService jwtTokenService,
+    IRefreshTokenRepository refreshTokenRepository)
   {
     _userManager = userManager;
     _signInManager = signInManager;
     _jwtTokenService = jwtTokenService;
+    _refreshTokenRepository = refreshTokenRepository;
   }
 
   public override void Configure()
@@ -31,9 +35,8 @@ public class LoginEndpoint : Endpoint<LoginRequestDto, AuthResponseDto>
     Post("/auth/login");
     AllowAnonymous();
 
-
     Description(b => b
-    .WithTags("Authentication")
+      .WithTags("Authentication")
       .WithSummary("Login user")
       .WithDescription("Authenticate user with email and password. Returns JWT tokens upon successful authentication."));
   }
@@ -44,16 +47,13 @@ public class LoginEndpoint : Endpoint<LoginRequestDto, AuthResponseDto>
   {
     // Find user by email
     var user = await _userManager.FindByEmailAsync(request.Email);
-
+    
     if (user == null)
     {
       HttpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
       await HttpContext.Response.WriteAsJsonAsync(new
       {
-        error = new
-        {
-          message = "Invalid email or password"
-        }
+        error = new { message = "Invalid email or password" }
       }, ct);
       return;
     }
@@ -64,10 +64,7 @@ public class LoginEndpoint : Endpoint<LoginRequestDto, AuthResponseDto>
       HttpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
       await HttpContext.Response.WriteAsJsonAsync(new
       {
-        error = new
-        {
-          message = "Account is deactivated. Please contact support."
-        }
+        error = new { message = "Account is deactivated. Please contact support." }
       }, ct);
       return;
     }
@@ -80,28 +77,16 @@ public class LoginEndpoint : Endpoint<LoginRequestDto, AuthResponseDto>
 
     if (!result.Succeeded)
     {
-      string errorMessage;
-
-      if (result.IsLockedOut)
-      {
-        errorMessage = "Account locked due to multiple failed login attempts. Try again in 5 minutes.";
-      }
-      else if (result.IsNotAllowed)
-      {
-        errorMessage = "Login not allowed. Please confirm your email address.";
-      }
-      else
-      {
-        errorMessage = "Invalid email or password";
-      }
+      string errorMessage = result.IsLockedOut 
+        ? "Account locked due to multiple failed login attempts. Try again in 5 minutes."
+        : result.IsNotAllowed
+          ? "Login not allowed. Please confirm your email address."
+          : "Invalid email or password";
 
       HttpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
       await HttpContext.Response.WriteAsJsonAsync(new
       {
-        error = new
-        {
-          message = errorMessage
-        }
+        error = new { message = errorMessage }
       }, ct);
       return;
     }
@@ -113,7 +98,17 @@ public class LoginEndpoint : Endpoint<LoginRequestDto, AuthResponseDto>
     // Generate JWT tokens
     var roles = await _userManager.GetRolesAsync(user);
     var accessToken = _jwtTokenService.GenerateAccessToken(user, roles);
+    var jwtId = _jwtTokenService.GetJwtIdFromToken(accessToken);
     var refreshToken = _jwtTokenService.GenerateRefreshToken();
+
+    // Store refresh token in database
+    var refreshTokenEntity = RefreshToken.Create(
+      user.Id,
+      refreshToken,
+      jwtId!,
+      daysValid: 7);
+
+    await _refreshTokenRepository.AddAsync(refreshTokenEntity, ct);
 
     var response = new AuthResponseDto(
       accessToken,

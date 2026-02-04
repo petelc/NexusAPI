@@ -2,8 +2,9 @@ using Ardalis.GuardClauses;
 using Nexus.API.Core.Enums;
 using Nexus.API.Core.Exceptions;
 using Nexus.API.Core.ValueObjects;
+using Traxs.SharedKernel;
 
-namespace Nexus.API.Core.Entities;
+namespace Nexus.API.Core.Aggregates.DiagramAggregate;
 
 /// <summary>
 /// Represents a visual element (shape) on the diagram
@@ -11,12 +12,13 @@ namespace Nexus.API.Core.Entities;
 public class DiagramElement : EntityBase<ElementId>
 {
   public ShapeType ShapeType { get; private set; }
-  public Point Position { get; private set; }
-  public Size Size { get; private set; }
-  public ElementStyle Style { get; private set; }
+  public Point Position { get; private set; } = null!;
+  public Size Size { get; private set; } = null!;
+  public ElementStyle Style { get; private set; } = null!;
   public string? Text { get; private set; }
   public LayerId? LayerId { get; private set; }
   public bool IsLocked { get; private set; }
+  public int ZIndex { get; private set; }
 
   // Custom properties stored as JSON
   private string? _customProperties;
@@ -35,7 +37,8 @@ public class DiagramElement : EntityBase<ElementId>
     Size size,
     ElementStyle style,
     string? text,
-    LayerId? layerId)
+    LayerId? layerId,
+    int zIndex = 0)
   {
     Id = id;
     ShapeType = shapeType;
@@ -44,6 +47,7 @@ public class DiagramElement : EntityBase<ElementId>
     Style = style ?? ElementStyle.CreateDefault();
     Text = text;
     LayerId = layerId;
+    ZIndex = zIndex;
     IsLocked = false;
   }
 

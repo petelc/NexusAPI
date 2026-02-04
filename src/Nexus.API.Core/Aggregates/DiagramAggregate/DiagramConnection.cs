@@ -2,8 +2,9 @@ using Ardalis.GuardClauses;
 using Nexus.API.Core.Enums;
 using Nexus.API.Core.Exceptions;
 using Nexus.API.Core.ValueObjects;
+using Traxs.SharedKernel;
 
-namespace Nexus.API.Core.Entities;
+namespace Nexus.API.Core.Aggregates.DiagramAggregate;
 
 /// <summary>
 /// Represents a connection (line/arrow) between two diagram elements
@@ -13,7 +14,7 @@ public class DiagramConnection : EntityBase<ConnectionId>
   public ElementId SourceElementId { get; private set; }
   public ElementId TargetElementId { get; private set; }
   public ConnectionType ConnectionType { get; private set; }
-  public ConnectionStyle Style { get; private set; }
+  public ConnectionStyle Style { get; private set; } = null!;
   public string? Label { get; private set; }
 
   // Control points for curves, stored as JSON

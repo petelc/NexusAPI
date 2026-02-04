@@ -20,13 +20,14 @@ public class JwtTokenService : IJwtTokenService
 
   public string GenerateAccessToken(object user, IList<string> roles)
   {
-    // Cast to ApplicationUser (infrastructure concern)
     if (user is not ApplicationUser appUser)
       throw new ArgumentException("User must be ApplicationUser", nameof(user));
 
     var securityKey = new SymmetricSecurityKey(
       Encoding.UTF8.GetBytes(_configuration["Jwt:Secret"]!));
     var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+    var jwtId = Guid.NewGuid().ToString();
 
     var claims = new List<Claim>
     {
@@ -35,7 +36,7 @@ public class JwtTokenService : IJwtTokenService
       new(JwtRegisteredClaimNames.Name, appUser.UserName!),
       new(JwtRegisteredClaimNames.GivenName, appUser.FirstName),
       new(JwtRegisteredClaimNames.FamilyName, appUser.LastName),
-      new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+      new(JwtRegisteredClaimNames.Jti, jwtId),
       new("uid", appUser.Id.ToString()),
     };
 
@@ -78,10 +79,26 @@ public class JwtTokenService : IJwtTokenService
         ValidIssuer = _configuration["Jwt:Issuer"],
         ValidateAudience = true,
         ValidAudience = _configuration["Jwt:Audience"],
-        ValidateLifetime = false // Don't validate lifetime for refresh token validation
+        ValidateLifetime = false, // Don't validate lifetime for refresh token validation
+        ClockSkew = TimeSpan.Zero
       }, out SecurityToken validatedToken);
 
       return principal;
+    }
+    catch
+    {
+      return null;
+    }
+  }
+
+  public string? GetJwtIdFromToken(string token)
+  {
+    var tokenHandler = new JwtSecurityTokenHandler();
+    
+    try
+    {
+      var jwtToken = tokenHandler.ReadJwtToken(token);
+      return jwtToken.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti)?.Value;
     }
     catch
     {

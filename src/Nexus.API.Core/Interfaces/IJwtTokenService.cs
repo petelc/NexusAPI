@@ -11,6 +11,7 @@ public interface IJwtTokenService
   string GenerateAccessToken(object user, IList<string> roles);
   string GenerateRefreshToken();
   ClaimsPrincipal? ValidateToken(string token);
+  string? GetJwtIdFromToken(string token);
 }
 
 public record TokenResult(

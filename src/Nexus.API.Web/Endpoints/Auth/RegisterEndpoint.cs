@@ -1,5 +1,6 @@
 using FastEndpoints;
 using Microsoft.AspNetCore.Identity;
+using Nexus.API.Core.Entities;
 using Nexus.API.Core.Interfaces;
 using Nexus.API.Infrastructure.Identity;
 using Nexus.API.UseCases.Auth.DTOs;
@@ -14,13 +15,16 @@ public class RegisterEndpoint : Endpoint<RegisterRequestDto, AuthResponseDto>
 {
   private readonly UserManager<ApplicationUser> _userManager;
   private readonly IJwtTokenService _jwtTokenService;
+  private readonly IRefreshTokenRepository _refreshTokenRepository;
 
   public RegisterEndpoint(
     UserManager<ApplicationUser> userManager,
-    IJwtTokenService jwtTokenService)
+    IJwtTokenService jwtTokenService,
+    IRefreshTokenRepository refreshTokenRepository)
   {
     _userManager = userManager;
     _jwtTokenService = jwtTokenService;
+    _refreshTokenRepository = refreshTokenRepository;
   }
 
   public override void Configure()
@@ -29,7 +33,7 @@ public class RegisterEndpoint : Endpoint<RegisterRequestDto, AuthResponseDto>
     AllowAnonymous();
 
     Description(b => b
-    .WithTags("Authentication")
+      .WithTags("Authentication")
       .WithSummary("Register a new user")
       .WithDescription("Creates a new user account with email, username, and password. Returns JWT tokens upon successful registration."));
   }
@@ -42,10 +46,10 @@ public class RegisterEndpoint : Endpoint<RegisterRequestDto, AuthResponseDto>
     if (request.Password != request.ConfirmPassword)
     {
       HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-      await HttpContext.Response.WriteAsJsonAsync(new
-      {
-        error = new
-        {
+      await HttpContext.Response.WriteAsJsonAsync(new 
+      { 
+        error = new 
+        { 
           message = "Passwords do not match",
           field = "confirmPassword"
         }
@@ -88,7 +92,17 @@ public class RegisterEndpoint : Endpoint<RegisterRequestDto, AuthResponseDto>
     // Generate JWT tokens
     var roles = await _userManager.GetRolesAsync(user);
     var accessToken = _jwtTokenService.GenerateAccessToken(user, roles);
+    var jwtId = _jwtTokenService.GetJwtIdFromToken(accessToken);
     var refreshToken = _jwtTokenService.GenerateRefreshToken();
+
+    // Store refresh token in database
+    var refreshTokenEntity = RefreshToken.Create(
+      user.Id,
+      refreshToken,
+      jwtId!,
+      daysValid: 7);
+
+    await _refreshTokenRepository.AddAsync(refreshTokenEntity, ct);
 
     var response = new AuthResponseDto(
       accessToken,

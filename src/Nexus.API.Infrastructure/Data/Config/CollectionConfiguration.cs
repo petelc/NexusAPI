@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Nexus.API.Core.Aggregates.CollectionAggregate;
 using Nexus.API.Core.ValueObjects;
 
-namespace Nexus.API.Infrastructure.Data.Configurations;
+namespace Nexus.API.Infrastructure.Data.Config;
 
 /// <summary>
 /// EF Core configuration for Collection aggregate

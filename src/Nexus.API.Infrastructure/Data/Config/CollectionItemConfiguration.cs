@@ -2,8 +2,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Nexus.API.Core.Aggregates.CollectionAggregate;
 using Nexus.API.Core.ValueObjects;
+using Org.BouncyCastle.Asn1.Icao;
 
-namespace Nexus.API.Infrastructure.Data.Configurations;
+namespace Nexus.API.Infrastructure.Data.Config;
 
 /// <summary>
 /// EF Core configuration for CollectionItem entity
@@ -47,7 +48,7 @@ public class CollectionItemConfiguration : IEntityTypeConfiguration<CollectionIt
       .IsRequired();
 
     // Indexes
-    builder.HasIndex("CollectionId", "Order")
+    builder.HasIndex("CollectionId", "OrderIndex")
       .HasDatabaseName("IX_CollectionItems_CollectionId");
 
     builder.HasIndex(ci => new { ci.ItemType, ci.ItemReferenceId })

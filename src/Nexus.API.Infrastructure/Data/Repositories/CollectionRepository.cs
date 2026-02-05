@@ -4,7 +4,7 @@ using Nexus.API.Core.ValueObjects;
 using Nexus.API.Core.Interfaces;
 using Nexus.API.Infrastructure.Data;
 
-namespace Nexus.API.Infrastructure.Repositories;
+namespace Nexus.API.Infrastructure.Data.Repositories;
 
 /// <summary>
 /// Repository implementation for Collection aggregate
@@ -131,8 +131,8 @@ public class CollectionRepository : ICollectionRepository
     return await _context.Collections
       .Include("_items")
       .Where(c => c.WorkspaceId == workspaceId &&
-                  (c.Name.ToLower().Contains(lowerSearch) ||
-                   (c.Description != null && c.Description.ToLower().Contains(lowerSearch))))
+                  (c.Name.ToLowerInvariant().Contains(lowerSearch) ||
+                   (c.Description != null && c.Description.ToLowerInvariant().Contains(lowerSearch))))
       .OrderBy(c => c.HierarchyPath.Level)
       .ThenBy(c => c.Name)
       .ToListAsync(cancellationToken);
@@ -172,17 +172,13 @@ public class CollectionRepository : ICollectionRepository
   {
     var query = _context.Collections
       .Where(c => c.WorkspaceId == workspaceId &&
-                  c.Name.ToLower() == name.ToLower());
+                  c.Name.ToLowerInvariant() == name.ToLowerInvariant());
 
     // Check within same parent (or root level)
-    if (parentId != null)
-    {
-      query = query.Where(c => c.ParentCollectionId == parentId);
-    }
-    else
-    {
-      query = query.Where(c => c.ParentCollectionId == null);
-    }
+    query = query.Where(c =>
+      parentId != null
+        ? c.ParentCollectionId == parentId
+        : c.ParentCollectionId == null);
 
     // Exclude specific collection (for updates)
     if (excludeId != null)

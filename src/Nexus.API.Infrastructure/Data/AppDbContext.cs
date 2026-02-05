@@ -6,6 +6,8 @@ using Nexus.API.Core.Aggregates.DiagramAggregate;
 using Nexus.API.Core.Entities;
 using Nexus.API.Infrastructure.Data.Config;
 using Traxs.SharedKernel;
+using Nexus.API.Core.Aggregates.CollectionAggregate;
+using Nexus.API.Infrastructure.Data.Configurations;
 
 namespace Nexus.API.Infrastructure.Data;
 
@@ -28,6 +30,8 @@ public class AppDbContext : DbContext
     public DbSet<DiagramElement> DiagramElements => Set<DiagramElement>();
     public DbSet<DiagramConnection> DiagramConnections => Set<DiagramConnection>();
     public DbSet<Layer> DiagramLayers => Set<Layer>();
+    public DbSet<Collection> Collections => Set<Collection>();
+    public DbSet<CollectionItem> CollectionItems => Set<CollectionItem>();
 
     // Add RefreshToken DbSet
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
@@ -44,6 +48,8 @@ public class AppDbContext : DbContext
         modelBuilder.ApplyConfiguration(new DiagramConfiguration());
         modelBuilder.ApplyConfiguration(new DiagramElementConfiguration());
         modelBuilder.ApplyConfiguration(new DiagramConnectionConfiguration());
+        modelBuilder.ApplyConfiguration(new CollectionConfiguration());
+        modelBuilder.ApplyConfiguration(new CollectionItemConfiguration());
         modelBuilder.ApplyConfiguration(new LayerConfiguration());
 
 

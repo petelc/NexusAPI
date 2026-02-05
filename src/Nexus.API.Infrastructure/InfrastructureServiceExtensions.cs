@@ -56,6 +56,10 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddHttpContextAccessor(); // Required for CurrentUserService
 
+        // Register Diagram Repository
+        services.AddScoped<IDiagramRepository, DiagramRepository>();
+        services.AddScoped<ICollectionRepository, CollectionRepository>();
+
         // External Services (optional - only register if configured)
         AddExternalServices(services, configuration, logger);
 

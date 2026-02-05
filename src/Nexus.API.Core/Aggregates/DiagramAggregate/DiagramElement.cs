@@ -102,6 +102,11 @@ public class DiagramElement : EntityBase<ElementId>
     Style = Guard.Against.Null(newStyle, nameof(newStyle));
   }
 
+  public void UpdateZIndex(int zIndex)
+  {
+    ZIndex = zIndex;
+  }
+
   public void MoveToLayer(LayerId? layerId)
   {
     LayerId = layerId;

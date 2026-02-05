@@ -1,7 +1,8 @@
 using Ardalis.GuardClauses;
 using Nexus.API.Core.ValueObjects;
+using Traxs.SharedKernel;
 
-namespace Nexus.API.Core.Entities;
+namespace Nexus.API.Core.Aggregates.DiagramAggregate;
 
 /// <summary>
 /// Layer entity for organizing diagram elements
@@ -9,7 +10,7 @@ namespace Nexus.API.Core.Entities;
 /// </summary>
 public class Layer : EntityBase<LayerId>
 {
-  public string Name { get; private set; }
+  public string Name { get; private set; } = null!;
   public int Order { get; private set; }
   public bool IsVisible { get; private set; }
   public bool IsLocked { get; private set; }

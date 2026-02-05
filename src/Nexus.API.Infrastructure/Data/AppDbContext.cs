@@ -2,6 +2,7 @@ using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Nexus.API.Core.Aggregates.DocumentAggregate;
 using Nexus.API.Core.Aggregates.UserAggregate;
+using Nexus.API.Core.Aggregates.DiagramAggregate;
 using Nexus.API.Core.Entities;
 using Nexus.API.Infrastructure.Data.Config;
 using Traxs.SharedKernel;
@@ -23,6 +24,11 @@ public class AppDbContext : DbContext
     public DbSet<Tag> Tags => Set<Tag>();
     public DbSet<User> Users => Set<User>();
 
+    public DbSet<Diagram> Diagrams => Set<Diagram>();
+    public DbSet<DiagramElement> DiagramElements => Set<DiagramElement>();
+    public DbSet<DiagramConnection> DiagramConnections => Set<DiagramConnection>();
+    public DbSet<Layer> DiagramLayers => Set<Layer>();
+
     // Add RefreshToken DbSet
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
@@ -32,7 +38,15 @@ public class AppDbContext : DbContext
 
         // Apply all configurations from this assembly
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+
         modelBuilder.ApplyConfiguration(new UserConfiguration());
+
+        modelBuilder.ApplyConfiguration(new DiagramConfiguration());
+        modelBuilder.ApplyConfiguration(new DiagramElementConfiguration());
+        modelBuilder.ApplyConfiguration(new DiagramConnectionConfiguration());
+        modelBuilder.ApplyConfiguration(new LayerConfiguration());
+
+
 
         // Add RefreshToken configuration
         modelBuilder.ApplyConfiguration(new RefreshTokenConfiguration());

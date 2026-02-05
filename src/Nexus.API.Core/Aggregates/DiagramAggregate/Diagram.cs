@@ -3,21 +3,22 @@ using Nexus.API.Core.Enums;
 using Nexus.API.Core.Events;
 using Nexus.API.Core.Exceptions;
 using Nexus.API.Core.ValueObjects;
+using Traxs.SharedKernel;
 
-namespace Nexus.API.Core.Entities;
+namespace Nexus.API.Core.Aggregates.DiagramAggregate;
 
 /// <summary>
 /// Diagram aggregate root
 /// Manages visual diagrams with elements, connections, and layers
 /// </summary>
-public class Diagram : AggregateRoot<DiagramId>
+public class Diagram : EntityBase<DiagramId>, IAggregateRoot
 {
-  public Title Title { get; private set; }
+  public Title Title { get; private set; } = null!;
   public DiagramType DiagramType { get; private set; }
   public Guid CreatedBy { get; private set; }
   public DateTime CreatedAt { get; private set; }
   public DateTime UpdatedAt { get; private set; }
-  public DiagramCanvas Canvas { get; private set; }
+  public DiagramCanvas Canvas { get; private set; } = null!;
   public bool IsDeleted { get; private set; }
   public DateTime? DeletedAt { get; private set; }
 
@@ -69,7 +70,7 @@ public class Diagram : AggregateRoot<DiagramId>
     // Create default layer
     diagram._layers.Add(Layer.CreateDefault());
 
-    diagram.AddDomainEvent(new DiagramCreatedEvent(diagram.Id, createdBy));
+    diagram.RegisterDomainEvent(new DiagramCreatedEvent(diagram.Id, createdBy));
     return diagram;
   }
 
@@ -106,7 +107,7 @@ public class Diagram : AggregateRoot<DiagramId>
     _elements.Add(element);
     UpdatedAt = DateTime.UtcNow;
 
-    AddDomainEvent(new DiagramElementAddedEvent(Id, element.Id));
+    RegisterDomainEvent(new DiagramElementAddedEvent(Id, element.Id));
   }
 
   /// <summary>
@@ -115,6 +116,8 @@ public class Diagram : AggregateRoot<DiagramId>
   /// </summary>
   public void RemoveElement(ElementId elementId)
   {
+    Guard.Against.Null(elementId, nameof(elementId));
+
     // Check if element has connections
     if (_connections.Any(c => c.SourceElementId.Value == elementId.Value ||
                               c.TargetElementId.Value == elementId.Value))
@@ -127,7 +130,7 @@ public class Diagram : AggregateRoot<DiagramId>
     _elements.Remove(element);
     UpdatedAt = DateTime.UtcNow;
 
-    AddDomainEvent(new DiagramElementRemovedEvent(Id, elementId));
+    RegisterDomainEvent(new DiagramElementRemovedEvent(Id, elementId));
   }
 
   /// <summary>
@@ -144,7 +147,7 @@ public class Diagram : AggregateRoot<DiagramId>
     element.UpdateSize(size);
     UpdatedAt = DateTime.UtcNow;
 
-    AddDomainEvent(new DiagramElementUpdatedEvent(Id, elementId));
+    RegisterDomainEvent(new DiagramElementUpdatedEvent(Id, elementId));
   }
 
   /// <summary>
@@ -196,7 +199,7 @@ public class Diagram : AggregateRoot<DiagramId>
     _connections.Add(connection);
     UpdatedAt = DateTime.UtcNow;
 
-    AddDomainEvent(new DiagramConnectionAddedEvent(Id, connection.Id));
+    RegisterDomainEvent(new DiagramConnectionAddedEvent(Id, connection.Id));
   }
 
   /// <summary>
@@ -211,7 +214,7 @@ public class Diagram : AggregateRoot<DiagramId>
     _connections.Remove(connection);
     UpdatedAt = DateTime.UtcNow;
 
-    AddDomainEvent(new DiagramConnectionRemovedEvent(Id, connectionId));
+    RegisterDomainEvent(new DiagramConnectionRemovedEvent(Id, connectionId));
   }
 
   /// <summary>

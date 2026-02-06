@@ -1,25 +1,18 @@
 using Microsoft.Extensions.DependencyInjection;
-using FluentValidation;
-using Nexus.API.UseCases.Collections.Validators;
 using Nexus.API.UseCases.Collections.Handlers;
 
-namespace Nexus.API.UseCases;
+namespace Nexus.API.UseCases.Collections;
 
 /// <summary>
-/// Extension methods for registering UseCases layer services
+/// Extension methods for registering Collection UseCases services
 /// </summary>
-public static class UseCasesServiceExtensions
+public static class CollectionServiceExtensions
 {
-  public static IServiceCollection AddUseCasesServices(
-    this IServiceCollection services)
+  /// <summary>
+  /// Registers all Collection command and query handlers
+  /// </summary>
+  public static IServiceCollection AddCollectionHandlers(this IServiceCollection services)
   {
-    // Register MediatR handlers from this assembly
-    services.AddMediatR(cfg =>
-      cfg.RegisterServicesFromAssembly(typeof(UseCasesServiceExtensions).Assembly));
-
-    // Register AutoMapper
-    services.AddAutoMapper(typeof(UseCasesServiceExtensions).Assembly);
-
     // Command Handlers
     services.AddScoped<CreateCollectionHandler>();
     services.AddScoped<UpdateCollectionHandler>();

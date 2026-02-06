@@ -1,5 +1,7 @@
 using FastEndpoints;
 using FastEndpoints.Swagger;
+using FluentValidation;
+
 using Nexus.API.Infrastructure;
 using Nexus.API.UseCases;
 using Nexus.API.Web.Configurations;
@@ -17,6 +19,8 @@ using Nexus.API.Infrastructure.Services;
 using Traxs.SharedKernel;
 using Nexus.API.Core.Interfaces;
 using Nexus.API.Infrastructure.Data.Repositories;
+using Nexus.API.UseCases.Collections.Validators;
+using Nexus.API.UseCases.Collections.Handlers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -144,6 +148,8 @@ builder.Services.SwaggerDocument(o =>
     s.Description = "A production-ready SaaS platform with authentication";
   };
 });
+
+
 
 var app = builder.Build();
 

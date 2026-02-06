@@ -7,7 +7,7 @@ using Nexus.API.Core.Entities;
 using Nexus.API.Infrastructure.Data.Config;
 using Traxs.SharedKernel;
 using Nexus.API.Core.Aggregates.CollectionAggregate;
-using Nexus.API.Infrastructure.Data.Configurations;
+
 
 namespace Nexus.API.Infrastructure.Data;
 

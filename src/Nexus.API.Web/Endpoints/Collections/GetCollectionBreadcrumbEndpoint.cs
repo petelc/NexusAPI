@@ -34,7 +34,7 @@ public class GetCollectionBreadcrumbEndpoint : EndpointWithoutRequest
 
   public override async Task HandleAsync(CancellationToken ct)
   {
-    if (!Guid.TryParse(Route<string>("id"), out var collectionId))
+    if (!Guid.TryParse(Route<string>("id"), out var collectionId) || collectionId == Guid.Empty)
     {
       HttpContext.Response.StatusCode = 400;
       await HttpContext.Response.WriteAsJsonAsync(new { error = "Invalid collection ID" }, ct);

@@ -1,6 +1,9 @@
 using FastEndpoints;
+using Nexus.API.Core.Interfaces;
+using Nexus.API.Core.ValueObjects;
+using Nexus.API.Core.Aggregates.CollectionAggregate;
+using Nexus.API.UseCases.Collections.DTOs;
 using Nexus.API.UseCases.Collections.Queries;
-using Nexus.API.UseCases.Collections.Handlers;
 
 namespace Nexus.API.Web.Endpoints.Collections;
 
@@ -11,11 +14,11 @@ namespace Nexus.API.Web.Endpoints.Collections;
 /// </summary>
 public class GetCollectionBreadcrumbEndpoint : EndpointWithoutRequest
 {
-  private readonly GetCollectionBreadcrumbHandler _handler;
+  private readonly ICollectionRepository _collectionRepository;
 
-  public GetCollectionBreadcrumbEndpoint(GetCollectionBreadcrumbHandler handler)
+  public GetCollectionBreadcrumbEndpoint(ICollectionRepository collectionRepository)
   {
-    _handler = handler;
+    _collectionRepository = collectionRepository;
   }
 
   public override void Configure()
@@ -31,37 +34,43 @@ public class GetCollectionBreadcrumbEndpoint : EndpointWithoutRequest
 
   public override async Task HandleAsync(CancellationToken ct)
   {
-    if (!Guid.TryParse(Route<string>("id"), out var collectionId))
+    if (!Guid.TryParse(Route<string>("id"), out var collectionId) || collectionId == Guid.Empty)
     {
       HttpContext.Response.StatusCode = 400;
       await HttpContext.Response.WriteAsJsonAsync(new { error = "Invalid collection ID" }, ct);
       return;
     }
 
-    var query = new GetCollectionBreadcrumbQuery
-    {
-      CollectionId = collectionId
-    };
-
     try
     {
-      var result = await _handler.Handle(query, ct);
+      var collectionIdValue = CollectionId.Create(collectionId);
+      var hierarchy = await _collectionRepository.GetHierarchyAsync(collectionIdValue, ct);
 
-      if (result.IsSuccess)
-      {
-        HttpContext.Response.StatusCode = 200;
-        await HttpContext.Response.WriteAsJsonAsync(result.Value, ct);
-      }
-      else
-      {
-        HttpContext.Response.StatusCode = 400;
-        await HttpContext.Response.WriteAsJsonAsync(new { error = result.Errors.FirstOrDefault() ?? "Failed to retrieve breadcrumb" }, ct);
-      }
+      var breadcrumb = hierarchy.Select(MapToSummaryDto).ToList();
+      var response = new GetCollectionBreadcrumbResponse { Breadcrumb = breadcrumb };
+
+      HttpContext.Response.StatusCode = 200;
+      await HttpContext.Response.WriteAsJsonAsync(response, ct);
     }
     catch (Exception ex)
     {
       HttpContext.Response.StatusCode = 500;
       await HttpContext.Response.WriteAsJsonAsync(new { error = ex.Message }, ct);
     }
+  }
+
+  private static CollectionSummaryDto MapToSummaryDto(Collection collection)
+  {
+    return new CollectionSummaryDto
+    {
+      CollectionId = collection.Id.Value,
+      Name = collection.Name,
+      Icon = collection.Icon,
+      Color = collection.Color,
+      ParentCollectionId = collection.ParentCollectionId?.Value,
+      HierarchyLevel = collection.HierarchyPath.Level,
+      ItemCount = collection.GetItemCount(),
+      UpdatedAt = collection.UpdatedAt
+    };
   }
 }

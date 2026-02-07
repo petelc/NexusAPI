@@ -16,6 +16,8 @@ public struct CollectionId : IEquatable<CollectionId>
   public static CollectionId Create(Guid value) => new CollectionId(value);
   public static CollectionId CreateNew() => new CollectionId(Guid.NewGuid());
 
+  public static CollectionId From(string value) => new(Guid.Parse(value));
+
   // Equatable implementation
   public bool Equals(CollectionId other) => Value.Equals(other.Value);
   public override bool Equals(object? obj) => obj is CollectionId other && Equals(other);

@@ -1,14 +1,9 @@
-using FastEndpoints;
-using FastEndpoints.Swagger;
 using Nexus.API.Infrastructure;
 using Nexus.API.UseCases;
 using Nexus.API.Web.Configurations;
-using Serilog;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.Extensions.Logging;
 using System.Text;
 using Nexus.API.Infrastructure.Data;
 using Nexus.API.Infrastructure.Identity;
@@ -144,6 +139,8 @@ builder.Services.SwaggerDocument(o =>
     s.Description = "A production-ready SaaS platform with authentication";
   };
 });
+
+
 
 var app = builder.Build();
 

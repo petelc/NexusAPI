@@ -7,6 +7,7 @@ using Nexus.API.Core.Entities;
 using Nexus.API.Infrastructure.Data.Config;
 using Traxs.SharedKernel;
 using Nexus.API.Core.Aggregates.CollectionAggregate;
+using Nexus.API.Core.Aggregates.WorkspaceAggregate;
 
 
 namespace Nexus.API.Infrastructure.Data;
@@ -32,6 +33,7 @@ public class AppDbContext : DbContext
     public DbSet<Layer> DiagramLayers => Set<Layer>();
     public DbSet<Collection> Collections => Set<Collection>();
     public DbSet<CollectionItem> CollectionItems => Set<CollectionItem>();
+    public DbSet<Workspace> Workspaces => Set<Workspace>();
 
     // Add RefreshToken DbSet
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
@@ -51,8 +53,7 @@ public class AppDbContext : DbContext
         modelBuilder.ApplyConfiguration(new CollectionConfiguration());
         modelBuilder.ApplyConfiguration(new CollectionItemConfiguration());
         modelBuilder.ApplyConfiguration(new LayerConfiguration());
-
-
+        modelBuilder.ApplyConfiguration(new WorkspaceConfiguration());
 
         // Add RefreshToken configuration
         modelBuilder.ApplyConfiguration(new RefreshTokenConfiguration());

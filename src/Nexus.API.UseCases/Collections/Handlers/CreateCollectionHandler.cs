@@ -1,5 +1,6 @@
 using Ardalis.Result;
 using Nexus.API.Core.Aggregates.CollectionAggregate;
+using Nexus.API.Core.Aggregates.WorkspaceAggregate;
 using Nexus.API.Core.Interfaces;
 using Nexus.API.Core.ValueObjects;
 using Nexus.API.UseCases.Collections.Commands;
@@ -28,34 +29,14 @@ public class CreateCollectionHandler
     CancellationToken cancellationToken)
   {
     var userId = _currentUserService.GetRequiredUserId();
-    if (userId == Guid.Empty)
-    {
-      return Result<CreateCollectionResponse>.Unauthorized();
-    }
+    var workspaceId = WorkspaceId.From(command.WorkspaceId.ToString());
 
-    // Check for duplicate name in same parent
-    var nameExists = await _collectionRepository.ExistsWithNameAsync(
-      WorkspaceId.Create(command.WorkspaceId),
-      command.Name,
-      command.ParentCollectionId.HasValue
-        ? CollectionId.Create(command.ParentCollectionId.Value)
-        : null,
-      null,
-      cancellationToken);
-
-    if (nameExists)
-    {
-      return Result<CreateCollectionResponse>.Error(
-        "A collection with this name already exists in the same location");
-    }
-
-    // Create collection
     Collection collection;
 
     if (command.ParentCollectionId.HasValue)
     {
-      // Child collection
-      var parentId = CollectionId.Create(command.ParentCollectionId.Value);
+      // Creating a child collection
+      var parentId = CollectionId.From(command.ParentCollectionId.Value.ToString());
       var parent = await _collectionRepository.GetByIdAsync(parentId, cancellationToken);
 
       if (parent == null)
@@ -65,7 +46,7 @@ public class CreateCollectionHandler
 
       collection = Collection.CreateChild(
         command.Name,
-        WorkspaceId.Create(command.WorkspaceId),
+        workspaceId,
         userId,
         parentId,
         parent.HierarchyPath,
@@ -75,10 +56,10 @@ public class CreateCollectionHandler
     }
     else
     {
-      // Root collection
+      // Creating a root collection
       collection = Collection.CreateRoot(
         command.Name,
-        WorkspaceId.Create(command.WorkspaceId),
+        workspaceId,
         userId,
         command.Description,
         command.Icon,
@@ -87,39 +68,9 @@ public class CreateCollectionHandler
 
     await _collectionRepository.AddAsync(collection, cancellationToken);
 
-    var dto = MapToDto(collection);
+    var dto = collection.ToDto();
 
     return Result<CreateCollectionResponse>.Success(
       new CreateCollectionResponse { Collection = dto });
-  }
-
-  private static CollectionDto MapToDto(Collection collection)
-  {
-    return new CollectionDto
-    {
-      CollectionId = collection.Id.Value,
-      Name = collection.Name,
-      Description = collection.Description,
-      ParentCollectionId = collection.ParentCollectionId?.Value,
-      WorkspaceId = collection.WorkspaceId.Value,
-      CreatedBy = collection.CreatedBy,
-      CreatedAt = collection.CreatedAt,
-      UpdatedAt = collection.UpdatedAt,
-      Icon = collection.Icon,
-      Color = collection.Color,
-      OrderIndex = collection.OrderIndex,
-      HierarchyLevel = collection.HierarchyPath.Level,
-      HierarchyPath = collection.HierarchyPath.Value,
-      ItemCount = collection.GetItemCount(),
-      Items = collection.Items.Select(item => new CollectionItemDto
-      {
-        CollectionItemId = item.Id.Value,
-        ItemType = item.ItemType.ToString(),
-        ItemReferenceId = item.ItemReferenceId,
-        Order = item.Order,
-        AddedBy = item.AddedBy,
-        AddedAt = item.AddedAt
-      }).ToList()
-    };
   }
 }

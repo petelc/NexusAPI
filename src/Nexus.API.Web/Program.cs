@@ -1,16 +1,9 @@
-using FastEndpoints;
-using FastEndpoints.Swagger;
-using FluentValidation;
-
 using Nexus.API.Infrastructure;
 using Nexus.API.UseCases;
 using Nexus.API.Web.Configurations;
-using Serilog;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.Extensions.Logging;
 using System.Text;
 using Nexus.API.Infrastructure.Data;
 using Nexus.API.Infrastructure.Identity;
@@ -19,8 +12,6 @@ using Nexus.API.Infrastructure.Services;
 using Traxs.SharedKernel;
 using Nexus.API.Core.Interfaces;
 using Nexus.API.Infrastructure.Data.Repositories;
-using Nexus.API.UseCases.Collections.Validators;
-using Nexus.API.UseCases.Collections.Handlers;
 
 var builder = WebApplication.CreateBuilder(args);
 

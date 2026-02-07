@@ -44,7 +44,7 @@ public class WorkspaceConfiguration : IEntityTypeConfiguration<Workspace>
     builder.Property(w => w.CreatedBy)
       .HasConversion(
         id => id.Value,
-        value => UserId.Create(value))
+        value => UserId.From(value))
       .IsRequired();
 
     builder.Property(w => w.CreatedAt)
@@ -60,7 +60,7 @@ public class WorkspaceConfiguration : IEntityTypeConfiguration<Workspace>
     builder.Property(w => w.DeletedAt);
 
     // Owned Collection: Members
-    builder.OwnsMany<WorkspaceMember>("_members", mb =>
+    builder.OwnsMany(w => w.Members, mb =>
     {
       mb.ToTable("WorkspaceMembers");
 
@@ -78,7 +78,7 @@ public class WorkspaceConfiguration : IEntityTypeConfiguration<Workspace>
       mb.Property(m => m.UserId)
         .HasConversion(
           id => id.Value,
-          value => UserId.Create(value))
+          value => UserId.From(value))
         .IsRequired();
 
       mb.Property(m => m.Role)
@@ -88,7 +88,7 @@ public class WorkspaceConfiguration : IEntityTypeConfiguration<Workspace>
       mb.Property(m => m.InvitedBy)
         .HasConversion(
           id => id != null ? id.Value : (Guid?)null,
-          value => value.HasValue ? UserId.Create(value.Value) : null);
+          value => value.HasValue ? UserId.From(value.Value) : null);
 
       mb.Property(m => m.JoinedAt)
         .IsRequired();

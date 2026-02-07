@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using FluentValidation;
 using Nexus.API.UseCases.Collections.Validators;
 using Nexus.API.UseCases.Collections.Handlers;
+using Nexus.API.UseCases.Workspaces.Handlers;
 
 namespace Nexus.API.UseCases;
 
@@ -20,6 +21,7 @@ public static class UseCasesServiceExtensions
     // Register AutoMapper
     services.AddAutoMapper(typeof(UseCasesServiceExtensions).Assembly);
 
+    // Collections
     // Command Handlers
     services.AddScoped<CreateCollectionHandler>();
     services.AddScoped<UpdateCollectionHandler>();
@@ -34,6 +36,22 @@ public static class UseCasesServiceExtensions
     services.AddScoped<GetChildCollectionsHandler>();
     services.AddScoped<SearchCollectionsHandler>();
     services.AddScoped<GetCollectionBreadcrumbHandler>();
+
+    // Workspace
+    // Command Handlers
+    services.AddScoped<CreateWorkspaceHandler>();
+    services.AddScoped<UpdateWorkspaceHandler>();
+    services.AddScoped<DeleteWorkspaceHandler>();
+    services.AddScoped<AddMemberHandler>();
+    services.AddScoped<RemoveMemberHandler>();
+    services.AddScoped<ChangeMemberRoleHandler>();
+
+    // Query Handlers
+    services.AddScoped<GetWorkspaceByIdHandler>();
+    services.AddScoped<GetUserWorkspacesHandler>();
+    services.AddScoped<GetTeamWorkspacesHandler>();
+    services.AddScoped<SearchWorkspacesHandler>();
+
 
     return services;
   }

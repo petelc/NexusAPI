@@ -8,6 +8,7 @@ using Nexus.API.Infrastructure.Data.Config;
 using Traxs.SharedKernel;
 using Nexus.API.Core.Aggregates.CollectionAggregate;
 using Nexus.API.Core.Aggregates.WorkspaceAggregate;
+using Nexus.API.Core.Aggregates.TeamAggregate;
 
 
 namespace Nexus.API.Infrastructure.Data;
@@ -35,6 +36,8 @@ public class AppDbContext : DbContext
     public DbSet<CollectionItem> CollectionItems => Set<CollectionItem>();
     public DbSet<Workspace> Workspaces => Set<Workspace>();
 
+    public DbSet<Team> Teams => Set<Team>();
+
     // Add RefreshToken DbSet
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
@@ -57,6 +60,7 @@ public class AppDbContext : DbContext
 
         // Add RefreshToken configuration
         modelBuilder.ApplyConfiguration(new RefreshTokenConfiguration());
+        modelBuilder.ApplyConfiguration(new TeamConfiguration());
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

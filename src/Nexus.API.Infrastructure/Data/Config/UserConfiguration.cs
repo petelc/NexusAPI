@@ -21,7 +21,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
     builder.Property(u => u.Id)
       .HasConversion(
         id => id.Value,
-        value => new UserId(value))
+        value => UserId.From(value))
       .IsRequired();
 
     // Configure Email as value object

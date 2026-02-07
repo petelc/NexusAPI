@@ -25,8 +25,12 @@ public readonly struct WorkspaceId : IEquatable<WorkspaceId>
   public static implicit operator Guid(WorkspaceId id) => id.Value;
 
   public bool Equals(WorkspaceId other) => Value.Equals(other.Value);
+
   public override bool Equals(object? obj) => obj is WorkspaceId other && Equals(other);
+
   public override int GetHashCode() => Value.GetHashCode();
+
   public static bool operator ==(WorkspaceId left, WorkspaceId right) => left.Equals(right);
+
   public static bool operator !=(WorkspaceId left, WorkspaceId right) => !left.Equals(right);
 }

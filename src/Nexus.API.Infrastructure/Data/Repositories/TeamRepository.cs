@@ -1,10 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using Nexus.API.Core.Aggregates.UserAggregate;
 using Nexus.API.Core.Aggregates.TeamAggregate;
-using Nexus.API.Core.Aggregates.WorkspaceAggregate;
-using Nexus.API.Core.Interfaces;
-using Nexus.API.Core.ValueObjects;
 using Nexus.API.Infrastructure.Data;
+using Nexus.API.Core.ValueObjects;
+using Nexus.API.Core.Interfaces;
 
 namespace Nexus.API.Infrastructure.Data.Repositories;
 
@@ -26,51 +24,63 @@ public class TeamRepository : ITeamRepository
             .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
     }
 
-    public async Task<IEnumerable<Team>> GetByUserIdAsync(UserId userId, CancellationToken cancellationToken = default)
+    public async Task<Team?> GetByIdWithMembersAsync(TeamId id, CancellationToken cancellationToken = default)
     {
         return await _context.Teams
-            .Where(t => t.Members.Any(m => m.UserId == userId))
-            .ToListAsync(cancellationToken);
-    }
-
-    public async Task<Team> AddAsync(Team team, CancellationToken cancellationToken = default)
-    {
-        _context.Teams.Add(team);
-        await _context.SaveChangesAsync(cancellationToken);
-        return team;
-    }
-
-    public async Task<Team> UpdateAsync(Team team, CancellationToken cancellationToken = default)
-    {
-        _context.Teams.Update(team);
-        await _context.SaveChangesAsync(cancellationToken);
-        return team;
-    }
-
-    Task ITeamRepository.UpdateAsync(Team team, CancellationToken cancellationToken)
-    {
-        return UpdateAsync(team, cancellationToken);
-    }
-
-    public Task DeleteAsync(Team team, CancellationToken cancellationToken = default)
-    {
-        _context.Teams.Remove(team);
-        return _context.SaveChangesAsync(cancellationToken);
-    }
-
-    public Task<Team?> GetByIdWithMembersAsync(TeamId id, CancellationToken cancellationToken = default)
-    {
-        return _context.Teams
             .Include(t => t.Members)
             .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
     }
 
-    public Task<IEnumerable<Team>> SearchByNameAsync(string searchTerm, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Team>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        return _context.Teams
-            .Where(t => t.Name.Contains(searchTerm))
-            .ToListAsync(cancellationToken)
-            .ContinueWith(t => t.Result.AsEnumerable(), cancellationToken);
+        return await _context.Teams
+            .Where(t => t.Members.Any(m => m.UserId == userId && m.IsActive))
+            .ToListAsync(cancellationToken);
     }
 
+    public async Task<IEnumerable<Team>> SearchByNameAsync(string searchTerm, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+            return Enumerable.Empty<Team>();
+
+        return await _context.Teams
+            .Where(t => t.Name.Contains(searchTerm))
+            .OrderBy(t => t.Name)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<bool> ExistsByNameAsync(string name, TeamId? excludeId = null, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            return false;
+
+        var query = _context.Teams.Where(t => t.Name == name);
+
+        if (excludeId.HasValue)
+        {
+            query = query.Where(t => t.Id != excludeId.Value);
+        }
+
+        return await query.AnyAsync(cancellationToken);
+    }
+
+    public async Task AddAsync(Team team, CancellationToken cancellationToken = default)
+    {
+        _context.Teams.Add(team);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task UpdateAsync(Team team, CancellationToken cancellationToken = default)
+    {
+        _context.Teams.Update(team);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task DeleteAsync(Team team, CancellationToken cancellationToken = default)
+    {
+        // This will typically be a soft delete handled by the aggregate
+        // But we still update the entity in the context
+        _context.Teams.Update(team);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
 }

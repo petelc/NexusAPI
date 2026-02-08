@@ -1,0 +1,19 @@
+using MediatR;
+
+namespace Nexus.API.UseCases.Teams.Commands;
+
+/// <summary>
+/// Command to change a team member's role
+/// </summary>
+public sealed record ChangeTeamMemberRoleCommand(
+    Guid TeamId,
+    Guid UserId,
+    string NewRole) : IRequest<ChangeTeamMemberRoleResult>;
+
+/// <summary>
+/// Result of changing a member's role
+/// </summary>
+public sealed record ChangeTeamMemberRoleResult(
+    Guid UserId,
+    string OldRole,
+    string NewRole);

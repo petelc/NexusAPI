@@ -1,11 +1,22 @@
 namespace Nexus.API.Core.Enums;
 
 /// <summary>
-/// Enumeration of possible roles a team member can have, defining their permissions and access levels within the team and its workspaces
+/// Defines the role of a team member
 /// </summary>
 public enum TeamRole
 {
-    Owner,      // Full access to all team resources and settings
-    Admin,      // Can manage team members and settings, but may have some restrictions compared to Owner
-    Member,     // Can access and contribute to team resources, but cannot manage team settings
+    /// <summary>
+    /// Basic team member - can view content
+    /// </summary>
+    Member = 1,
+
+    /// <summary>
+    /// Team administrator - can manage members and content
+    /// </summary>
+    Admin = 2,
+
+    /// <summary>
+    /// Team owner - full control including deleting team
+    /// </summary>
+    Owner = 3
 }

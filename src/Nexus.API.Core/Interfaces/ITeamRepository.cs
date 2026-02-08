@@ -1,4 +1,5 @@
 using Nexus.API.Core.Aggregates.TeamAggregate;
+using Nexus.API.Core.Aggregates.TeamAggregate.Events;
 using Nexus.API.Core.ValueObjects;
 
 namespace Nexus.API.Core.Interfaces;
@@ -9,58 +10,42 @@ namespace Nexus.API.Core.Interfaces;
 public interface ITeamRepository
 {
     /// <summary>
-    /// Gets a team by ID
+    /// Get team by ID
     /// </summary>
-    /// <param name="id">Team ID</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Team or null if not found</returns>
     Task<Team?> GetByIdAsync(TeamId id, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Gets teams by user ID (teams where the user is a member)
+    /// Get team by ID with members loaded
     /// </summary>
-    /// <param name="userId">User ID</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>List of teams</returns>
-    Task<IEnumerable<Team>> GetByUserIdAsync(UserId userId, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Adds a new team
-    /// </summary>
-    /// <param name="team">Team to add</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Added team</returns>
-    Task<Team> AddAsync(Team team, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Updates an existing team
-    /// </summary>
-    /// <param name="team">Team to update</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Task</returns>
-    Task UpdateAsync(Team team, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Deletes a team
-    /// </summary>
-    /// <param name="team">Team to delete</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Task</returns>
-    Task DeleteAsync(Team team, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Gets a team with members included
-    /// </summary>
-    /// <param name="id">Team ID</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Team with members or null if not found</returns>
     Task<Team?> GetByIdWithMembersAsync(TeamId id, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Searches teams by name
+    /// Get all teams where user is a member
     /// </summary>
-    /// <param name="searchTerm">Search term for team name</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>List of teams matching the search term</returns>
+    Task<IEnumerable<Team>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Search teams by name
+    /// </summary>
     Task<IEnumerable<Team>> SearchByNameAsync(string searchTerm, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Check if a team with the given name already exists
+    /// </summary>
+    Task<bool> ExistsByNameAsync(string name, TeamId? excludeId = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Add a new team
+    /// </summary>
+    Task AddAsync(Team team, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Update an existing team
+    /// </summary>
+    Task UpdateAsync(Team team, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Delete a team (usually soft delete)
+    /// </summary>
+    Task DeleteAsync(Team team, CancellationToken cancellationToken = default);
 }

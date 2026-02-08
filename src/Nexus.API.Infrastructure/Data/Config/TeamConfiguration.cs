@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Nexus.API.Core.Aggregates.TeamAggregate;
 using Nexus.API.Core.ValueObjects;
 
@@ -5,16 +7,13 @@ namespace Nexus.API.Infrastructure.Data.Config;
 
 /// <summary>
 /// EF Core configuration for Team aggregate
+/// Maps Team and its owned TeamMember collection to database tables
 /// </summary>
-/// 
-/// <remarks>
-/// This configuration class defines how the Team aggregate is mapped to the database using Entity Framework Core. It specifies the table name, primary key, property configurations, and relationships with other entities. The configuration ensures that the Team entity is properly stored and retrieved from the database while adhering to the domain model's constraints and requirements.
-/// </remarks>
 public class TeamConfiguration : IEntityTypeConfiguration<Team>
 {
     public void Configure(EntityTypeBuilder<Team> builder)
     {
-        builder.ToTable("Teams");
+        builder.ToTable("Teams", "identity");
 
         // Primary Key
         builder.HasKey(t => t.Id);
@@ -35,23 +34,79 @@ public class TeamConfiguration : IEntityTypeConfiguration<Team>
             .HasMaxLength(1000);
 
         builder.Property(t => t.CreatedBy)
-            .HasConversion(
-                id => id.Value,
-                value => UserId.From(value))
             .IsRequired();
 
         builder.Property(t => t.CreatedAt)
             .IsRequired();
 
-        // Relationships
-        builder.HasMany(t => t.Members)
-            .WithOne()
-            .HasForeignKey(m => m.TeamId)
-            .OnDelete(DeleteBehavior.Cascade);
+        builder.Property(t => t.UpdatedAt)
+            .IsRequired();
 
-        builder.HasMany(t => t.Workspaces)
-            .WithOne()
-            .HasForeignKey(w => w.TeamId)
-            .OnDelete(DeleteBehavior.Cascade);
+        builder.Property(t => t.IsDeleted)
+            .IsRequired()
+            .HasDefaultValue(false);
+
+        builder.Property(t => t.DeletedAt);
+
+        // Owned Entity - TeamMembers
+        builder.OwnsMany(t => t.Members, membersBuilder =>
+        {
+            membersBuilder.ToTable("TeamMembers", "identity");
+
+            // Composite Primary Key
+            membersBuilder.WithOwner()
+                .HasForeignKey(nameof(TeamMember.TeamId));
+
+            membersBuilder.HasKey(nameof(TeamMember.Id), nameof(TeamMember.TeamId));
+
+            membersBuilder.Property(m => m.Id)
+                .HasConversion(
+                    id => id.Value,
+                    value => TeamMemberId.Create(value))
+                .HasColumnName("MemberId")
+                .IsRequired();
+
+            membersBuilder.Property(m => m.TeamId)
+                .HasConversion(
+                    id => id.Value,
+                    value => TeamId.Create(value))
+                .IsRequired();
+
+            membersBuilder.Property(m => m.UserId)
+                .IsRequired();
+
+            membersBuilder.Property(m => m.Role)
+                .HasConversion<int>()
+                .IsRequired();
+
+            membersBuilder.Property(m => m.InvitedBy);
+
+            membersBuilder.Property(m => m.JoinedAt)
+                .IsRequired();
+
+            membersBuilder.Property(m => m.IsActive)
+                .IsRequired()
+                .HasDefaultValue(true);
+
+            // Indexes for TeamMembers
+            membersBuilder.HasIndex(m => m.UserId)
+                .HasDatabaseName("IX_TeamMembers_UserId");
+
+            membersBuilder.HasIndex(m => new { m.TeamId, m.UserId })
+                .HasDatabaseName("IX_TeamMembers_TeamId_UserId");
+        });
+
+        // Indexes
+        builder.HasIndex(t => t.Name)
+            .HasDatabaseName("IX_Teams_Name");
+
+        builder.HasIndex(t => t.CreatedBy)
+            .HasDatabaseName("IX_Teams_CreatedBy");
+
+        builder.HasIndex(t => t.IsDeleted)
+            .HasDatabaseName("IX_Teams_IsDeleted");
+
+        // Query Filter for soft deletes
+        builder.HasQueryFilter(t => !t.IsDeleted);
     }
 }

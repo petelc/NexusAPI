@@ -3,6 +3,8 @@ using FluentValidation;
 using Nexus.API.UseCases.Collections.Validators;
 using Nexus.API.UseCases.Collections.Handlers;
 using Nexus.API.UseCases.Workspaces.Handlers;
+using Nexus.API.UseCases.Teams.Handlers;
+using Nexus.API.UseCases.Collaboration.Handlers;
 
 namespace Nexus.API.UseCases;
 
@@ -51,6 +53,44 @@ public static class UseCasesServiceExtensions
     services.AddScoped<GetUserWorkspacesHandler>();
     services.AddScoped<GetTeamWorkspacesHandler>();
     services.AddScoped<SearchWorkspacesHandler>();
+
+    // ====================================================================
+    // TEAMS HANDLERS
+    // ====================================================================
+    services.AddScoped<CreateTeamCommandHandler>();
+    services.AddScoped<UpdateTeamCommandHandler>();
+    services.AddScoped<DeleteTeamCommandHandler>();
+    services.AddScoped<AddTeamMemberCommandHandler>();
+    services.AddScoped<RemoveTeamMemberCommandHandler>();
+    services.AddScoped<ChangeTeamMemberRoleCommandHandler>();
+    services.AddScoped<GetTeamByIdQueryHandler>();
+    services.AddScoped<GetUserTeamsQueryHandler>();
+    services.AddScoped<SearchTeamsQueryHandler>();
+
+    // ====================================================================
+    // WORKSPACES HANDLERS
+    // ====================================================================
+    services.AddScoped<CreateWorkspaceHandler>();
+    services.AddScoped<UpdateWorkspaceHandler>();
+    services.AddScoped<DeleteWorkspaceHandler>();
+    services.AddScoped<AddMemberHandler>();
+    services.AddScoped<RemoveMemberHandler>();
+    services.AddScoped<ChangeMemberRoleHandler>();
+    services.AddScoped<GetWorkspaceByIdHandler>();
+    services.AddScoped<GetUserWorkspacesHandler>();
+    services.AddScoped<GetTeamWorkspacesHandler>();
+    services.AddScoped<SearchWorkspacesHandler>();
+
+    // ====================================================================
+    // COLLABORATION HANDLERS
+    // ====================================================================
+    services.AddScoped<StartSessionCommandHandler>();
+    services.AddScoped<EndSessionCommandHandler>();
+    services.AddScoped<JoinSessionCommandHandler>();
+    services.AddScoped<LeaveSessionCommandHandler>();
+    services.AddScoped<GetSessionByIdQueryHandler>();
+    services.AddScoped<GetActiveSessionsQueryHandler>();
+    services.AddScoped<GetUserSessionsQueryHandler>();
 
 
     return services;

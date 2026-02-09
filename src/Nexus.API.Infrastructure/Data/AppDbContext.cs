@@ -9,6 +9,7 @@ using Traxs.SharedKernel;
 using Nexus.API.Core.Aggregates.CollectionAggregate;
 using Nexus.API.Core.Aggregates.WorkspaceAggregate;
 using Nexus.API.Core.Aggregates.TeamAggregate;
+using Nexus.API.Core.Aggregates.CollaborationAggregate;
 
 
 namespace Nexus.API.Infrastructure.Data;
@@ -35,8 +36,11 @@ public class AppDbContext : DbContext
     public DbSet<Collection> Collections => Set<Collection>();
     public DbSet<CollectionItem> CollectionItems => Set<CollectionItem>();
     public DbSet<Workspace> Workspaces => Set<Workspace>();
-
     public DbSet<Team> Teams => Set<Team>();
+    public DbSet<CollaborationSession> CollaborationSessions => Set<CollaborationSession>();
+    public DbSet<SessionParticipant> SessionParticipants => Set<SessionParticipant>();
+    public DbSet<Comment> Comments => Set<Comment>();
+    public DbSet<SessionChange> SessionChanges => Set<SessionChange>();
 
     // Add RefreshToken DbSet
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
@@ -61,6 +65,10 @@ public class AppDbContext : DbContext
         // Add RefreshToken configuration
         modelBuilder.ApplyConfiguration(new RefreshTokenConfiguration());
         modelBuilder.ApplyConfiguration(new TeamConfiguration());
+        modelBuilder.ApplyConfiguration(new CollaborationSessionConfiguration());
+        modelBuilder.ApplyConfiguration(new SessionParticipantConfiguration());
+        modelBuilder.ApplyConfiguration(new CommentConfiguration());
+        modelBuilder.ApplyConfiguration(new SessionChangeConfiguration());
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

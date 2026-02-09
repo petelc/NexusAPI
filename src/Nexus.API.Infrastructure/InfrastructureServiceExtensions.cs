@@ -60,6 +60,10 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<IDiagramRepository, DiagramRepository>();
         services.AddScoped<ICollectionRepository, CollectionRepository>();
 
+        services.AddScoped<IWorkspaceRepository, WorkspaceRepository>();
+
+        services.AddScoped<ICollaborationRepository, CollaborationRepository>();
+
         // External Services (optional - only register if configured)
         AddExternalServices(services, configuration, logger);
 

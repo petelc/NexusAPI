@@ -119,6 +119,8 @@ builder.Services.AddScoped<ICodeSnippetRepository, CodeSnippetRepository>();
 // Add Tag repository
 builder.Services.AddScoped<ITagRepository, TagRepository>();
 
+builder.Services.AddScoped<ITeamRepository, TeamRepository>();
+
 // Add UrlEncoder for 2FA QR code generation
 builder.Services.AddSingleton<System.Text.Encodings.Web.UrlEncoder>(
   System.Text.Encodings.Web.UrlEncoder.Default);

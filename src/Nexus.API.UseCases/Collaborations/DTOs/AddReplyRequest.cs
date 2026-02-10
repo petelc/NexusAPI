@@ -1,9 +1,9 @@
 namespace Nexus.API.UseCases.Collaboration.DTOs;
 
 /// <summary>
-/// Request DTO for updating a comment
+/// Request DTO for adding a reply
 /// </summary>
-public class UpdateCommentRequest
+public class AddReplyRequest
 {
     public string Text { get; set; } = string.Empty;
 }

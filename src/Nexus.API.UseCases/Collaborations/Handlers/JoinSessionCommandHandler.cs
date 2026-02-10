@@ -1,78 +1,57 @@
-using MediatR;
+using Ardalis.Result;
 using Nexus.API.Core.Interfaces;
-using Nexus.API.Core.ValueObjects;
-using Nexus.API.Core.Enums;
 using Nexus.API.UseCases.Collaboration.Commands;
-using Nexus.API.UseCases.Collaboration.DTOs;
+using Nexus.API.UseCases.Collaboration.Interfaces;
 
 namespace Nexus.API.UseCases.Collaboration.Handlers;
 
 /// <summary>
-/// Handler for joining a collaboration session
+/// Handler for adding a participant to a collaboration session via REST.
+/// Depends only on UseCases-layer interfaces - Clean Architecture compliant.
+/// Note: WebSocket join is handled separately by CollaborationHub.JoinSession.
 /// </summary>
 public class JoinSessionCommandHandler
 {
     private readonly ICollaborationRepository _collaborationRepository;
+    private readonly ICollaborationNotificationService _notificationService;
 
-    public JoinSessionCommandHandler(ICollaborationRepository collaborationRepository)
+    public JoinSessionCommandHandler(
+        ICollaborationRepository collaborationRepository,
+        ICollaborationNotificationService notificationService)
     {
-        _collaborationRepository = collaborationRepository ?? throw new ArgumentNullException(nameof(collaborationRepository));
+        _collaborationRepository = collaborationRepository
+            ?? throw new ArgumentNullException(nameof(collaborationRepository));
+        _notificationService = notificationService
+            ?? throw new ArgumentNullException(nameof(notificationService));
     }
 
-    public async Task<Result<CollaborationSessionResponseDto>> Handle(
+    public async Task<Result> Handle(
         JoinSessionCommand command,
         CancellationToken cancellationToken)
     {
-        // Validate role
-        if (!Enum.TryParse<ParticipantRole>(command.Role, true, out var role))
-        {
-            return Result<CollaborationSessionResponseDto>.Invalid(
-                new ValidationError { ErrorMessage = $"Invalid role: {command.Role}" });
-        }
+        var session = await _collaborationRepository.GetSessionByIdAsync(
+            command.SessionId, cancellationToken);
 
-        // Get session
-        var session = await _collaborationRepository.GetSessionByIdAsync(command.SessionId, cancellationToken);
-        if (session == null || !session.IsActive)
-        {
-            return Result<CollaborationSessionResponseDto>.NotFound("Session not found or not active");
-        }
+        if (session == null)
+            return Result.NotFound("Collaboration session not found");
 
-        // Add participant
+        if (!session.IsActive)
+            return Result.Invalid(new ValidationError { ErrorMessage = "Cannot join an ended session" });
+
+        if (!Enum.TryParse<Core.Enums.ParticipantRole>(command.Role, true, out var role))
+            return Result.Invalid(new ValidationError { ErrorMessage = $"Invalid role: {command.Role}" });
+
         session.AddParticipant(command.UserId, role);
 
-        // Update
         await _collaborationRepository.UpdateSessionAsync(session, cancellationToken);
 
-        // Map and return
-        var response = MapToResponseDto(session);
-        return Result<CollaborationSessionResponseDto>.Success(response);
-    }
+        await _notificationService.NotifyParticipantAddedAsync(
+            session.Id,
+            command.UserId,
+            role.ToString(),
+            session.GetActiveParticipantCount(),
+            cancellationToken);
 
-    private static CollaborationSessionResponseDto MapToResponseDto(
-        Core.Aggregates.CollaborationAggregate.CollaborationSession session)
-    {
-        return new CollaborationSessionResponseDto
-        {
-            SessionId = session.Id,
-            ResourceType = session.ResourceType.ToString(),
-            ResourceId = session.ResourceId,
-            StartedAt = session.StartedAt,
-            EndedAt = session.EndedAt,
-            IsActive = session.IsActive,
-            ActiveParticipantCount = session.GetActiveParticipantCount(),
-            Participants = session.Participants.Select(p => new SessionParticipantDto
-            {
-                ParticipantId = p.Id,
-                UserId = p.UserId,
-                Username = string.Empty, // TODO: Fetch from user service
-                FullName = string.Empty, // TODO: Fetch from user service
-                Role = p.Role.ToString(),
-                JoinedAt = p.JoinedAt,
-                LeftAt = p.LeftAt,
-                LastActivityAt = p.LastActivityAt,
-                CursorPosition = p.CursorPosition,
-                IsActive = p.IsActive
-            }).ToList()
-        };
+        return Result.Success();
     }
 }

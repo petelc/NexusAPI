@@ -2,6 +2,7 @@ using FastEndpoints;
 using System.Security.Claims;
 using Nexus.API.Core.ValueObjects;
 using Nexus.API.UseCases.Collaboration.Handlers;
+using Nexus.API.UseCases.Collaboration.Commands;
 
 namespace Nexus.API.Web.Endpoints.Collaboration;
 
@@ -50,7 +51,12 @@ public class LeaveSessionEndpoint : EndpointWithoutRequest
 
         try
         {
-            var result = await _handler.Handle(SessionId.Create(sessionId), ParticipantId.Create(userId), ct);
+            var command = new LeaveSessionCommand
+            {
+                SessionId = SessionId.Create(sessionId),
+                UserId = ParticipantId.Create(userId)
+            };
+            var result = await _handler.Handle(command, ct);
 
             if (result.IsSuccess)
             {

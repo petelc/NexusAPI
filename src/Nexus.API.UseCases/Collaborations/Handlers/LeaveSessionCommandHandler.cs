@@ -1,42 +1,57 @@
-using MediatR;
+using Ardalis.Result;
 using Nexus.API.Core.Interfaces;
-using Nexus.API.Core.ValueObjects;
 using Nexus.API.UseCases.Collaboration.Commands;
+using Nexus.API.UseCases.Collaboration.Interfaces;
 
 namespace Nexus.API.UseCases.Collaboration.Handlers;
 
 /// <summary>
-/// Handler for leaving a collaboration session
+/// Handler for removing a participant from a collaboration session via REST.
+/// Depends only on UseCases-layer interfaces - Clean Architecture compliant.
+/// Note: WebSocket disconnect is handled separately by CollaborationHub.
 /// </summary>
 public class LeaveSessionCommandHandler
 {
     private readonly ICollaborationRepository _collaborationRepository;
+    private readonly ICollaborationNotificationService _notificationService;
 
-    public LeaveSessionCommandHandler(ICollaborationRepository collaborationRepository)
+    public LeaveSessionCommandHandler(
+        ICollaborationRepository collaborationRepository,
+        ICollaborationNotificationService notificationService)
     {
-        _collaborationRepository = collaborationRepository ?? throw new ArgumentNullException(nameof(collaborationRepository));
+        _collaborationRepository = collaborationRepository
+            ?? throw new ArgumentNullException(nameof(collaborationRepository));
+        _notificationService = notificationService
+            ?? throw new ArgumentNullException(nameof(notificationService));
     }
 
     public async Task<Result> Handle(
-        SessionId sessionId,
-        ParticipantId userId,
+        LeaveSessionCommand command,
         CancellationToken cancellationToken)
     {
-        var session = await _collaborationRepository.GetSessionByIdAsync(sessionId, cancellationToken);
+        var session = await _collaborationRepository.GetSessionByIdAsync(
+            command.SessionId, cancellationToken);
+
         if (session == null)
-        {
-            return Result.NotFound("Session not found");
-        }
+            return Result.NotFound("Collaboration session not found");
 
-        if (!session.IsUserActiveParticipant(userId))
-        {
-            return Result.NotFound("You are not a participant in this session");
-        }
+        if (!session.IsActive)
+            return Result.Invalid(new ValidationError { ErrorMessage = "Session is not active" });
 
-        session.RemoveParticipant(userId);
+        var participant = session.Participants.FirstOrDefault(p => p.UserId == command.UserId && p.IsActive);
+        if (participant == null)
+            return Result.NotFound("User is not an active participant in this session");
+
+        session.RemoveParticipant(command.UserId);
+
         await _collaborationRepository.UpdateSessionAsync(session, cancellationToken);
+
+        await _notificationService.NotifyParticipantRemovedAsync(
+            session.Id,
+            command.UserId,
+            session.GetActiveParticipantCount(),
+            cancellationToken);
 
         return Result.Success();
     }
 }
-

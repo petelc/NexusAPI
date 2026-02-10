@@ -1,61 +1,69 @@
 using Ardalis.Result;
-using MediatR;
 using Nexus.API.Core.Aggregates.CollaborationAggregate;
 using Nexus.API.Core.Enums;
 using Nexus.API.Core.Interfaces;
 using Nexus.API.Core.ValueObjects;
 using Nexus.API.UseCases.Collaboration.Commands;
 using Nexus.API.UseCases.Collaboration.DTOs;
+using Nexus.API.UseCases.Collaboration.Interfaces;
 
 namespace Nexus.API.UseCases.Collaboration.Handlers;
 
 /// <summary>
-/// Handler for starting a collaboration session
+/// Handler for starting a collaboration session.
+/// Depends only on UseCases-layer interfaces — Clean Architecture compliant.
 /// </summary>
 public class StartSessionCommandHandler
 {
     private readonly ICollaborationRepository _collaborationRepository;
+    private readonly ICollaborationNotificationService _notificationService;
 
-    public StartSessionCommandHandler(ICollaborationRepository collaborationRepository)
+    public StartSessionCommandHandler(
+        ICollaborationRepository collaborationRepository,
+        ICollaborationNotificationService notificationService)
     {
-        _collaborationRepository = collaborationRepository ?? throw new ArgumentNullException(nameof(collaborationRepository));
+        _collaborationRepository = collaborationRepository
+            ?? throw new ArgumentNullException(nameof(collaborationRepository));
+        _notificationService = notificationService
+            ?? throw new ArgumentNullException(nameof(notificationService));
     }
 
     public async Task<Result<CollaborationSessionResponseDto>> Handle(
-        StartSessionCommand request,
+        StartSessionCommand command,
         CancellationToken cancellationToken)
     {
-        // Validate resource type
-        if (!Enum.TryParse<ResourceType>(request.ResourceType, true, out var resourceType))
+        if (!Enum.TryParse<ResourceType>(command.ResourceType, true, out var resourceType))
         {
             return Result<CollaborationSessionResponseDto>.Invalid(
-                new ValidationError { ErrorMessage = $"Invalid resource type: {request.ResourceType}" });
+                new ValidationError { ErrorMessage = $"Invalid resource type: {command.ResourceType}" });
         }
 
-        // Check if there's already an active session for this resource
         var existingSessions = await _collaborationRepository.GetActiveSessionsByResourceAsync(
-            resourceType,
-            request.ResourceId,
-            cancellationToken);
+            resourceType, command.ResourceId, cancellationToken);
 
         if (existingSessions.Any())
         {
             return Result<CollaborationSessionResponseDto>.Conflict(
-                $"An active collaboration session already exists for this {request.ResourceType}");
+                $"An active collaboration session already exists for this {command.ResourceType}");
         }
 
-        // Create new session
         var session = CollaborationSession.Start(
             resourceType,
-            request.ResourceId,
-            ParticipantId.Create(request.InitiatorUserId));
+            command.ResourceId,
+            command.InitiatorUserId);
 
-        // Save to database
         await _collaborationRepository.AddSessionAsync(session, cancellationToken);
 
-        // Map to response DTO
-        var response = MapToResponseDto(session);
-        return Result<CollaborationSessionResponseDto>.Success(response);
+        // Real-time notification — interface-based, no Web dependency
+        await _notificationService.NotifySessionStartedAsync(
+            session.Id,
+            session.ResourceId,
+            session.ResourceType.ToString(),
+            command.InitiatorUserId,
+            session.StartedAt,
+            cancellationToken);
+
+        return Result<CollaborationSessionResponseDto>.Success(MapToResponseDto(session));
     }
 
     private static CollaborationSessionResponseDto MapToResponseDto(CollaborationSession session)
@@ -73,8 +81,8 @@ public class StartSessionCommandHandler
             {
                 ParticipantId = p.Id,
                 UserId = p.UserId,
-                Username = string.Empty, // TODO: Fetch from user service
-                FullName = string.Empty, // TODO: Fetch from user service
+                Username = string.Empty,
+                FullName = string.Empty,
                 Role = p.Role.ToString(),
                 JoinedAt = p.JoinedAt,
                 LeftAt = p.LeftAt,

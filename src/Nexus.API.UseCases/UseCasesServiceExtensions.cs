@@ -84,13 +84,26 @@ public static class UseCasesServiceExtensions
     // ====================================================================
     // COLLABORATION HANDLERS
     // ====================================================================
+    // Session Command Handlers
     services.AddScoped<StartSessionCommandHandler>();
     services.AddScoped<EndSessionCommandHandler>();
     services.AddScoped<JoinSessionCommandHandler>();
     services.AddScoped<LeaveSessionCommandHandler>();
+
+    // Session Query Handlers
     services.AddScoped<GetSessionByIdQueryHandler>();
     services.AddScoped<GetActiveSessionsQueryHandler>();
     services.AddScoped<GetUserSessionsQueryHandler>();
+
+    // Comment Command Handlers
+    services.AddScoped<AddCommentCommandHandler>();
+    services.AddScoped<UpdateCommentCommandHandler>();
+    services.AddScoped<DeleteCommentCommandHandler>();
+    services.AddScoped<AddReplyCommandHandler>();
+
+    // Comment Query Handlers
+    services.AddScoped<GetCommentByIdQueryHandler>();
+    services.AddScoped<GetResourceCommentsQueryHandler>();
 
 
     return services;

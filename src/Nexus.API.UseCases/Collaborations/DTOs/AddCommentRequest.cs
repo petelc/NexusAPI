@@ -1,13 +1,13 @@
 namespace Nexus.API.UseCases.Collaboration.DTOs;
 
 /// <summary>
-/// Request to add a comment
+/// Request DTO for adding a comment
 /// </summary>
-public record AddCommentRequest
+public class AddCommentRequest
 {
-    public string ResourceType { get; init; } = string.Empty; // "Document" or "Diagram"
-    public Guid ResourceId { get; init; }
-    public string Text { get; init; } = string.Empty;
-    public int? Position { get; init; }
-    public Guid? SessionId { get; init; }
+    public Guid? SessionId { get; set; }
+    public string ResourceType { get; set; } = string.Empty;
+    public Guid ResourceId { get; set; }
+    public string Text { get; set; } = string.Empty;
+    public int? Position { get; set; }
 }

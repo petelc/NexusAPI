@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Nexus.API.Core.Interfaces;
+using Nexus.API.Infrastructure.Collaboration;
 using Nexus.API.Infrastructure.Data;
 using Nexus.API.Infrastructure.Data.Repositories;
 using Nexus.API.Infrastructure.Repositories;
@@ -59,6 +60,18 @@ public static class InfrastructureServiceExtensions
         // Register Diagram Repository
         services.AddScoped<IDiagramRepository, DiagramRepository>();
         services.AddScoped<ICollectionRepository, CollectionRepository>();
+
+        services.AddScoped<IWorkspaceRepository, WorkspaceRepository>();
+
+        services.AddScoped<ICollaborationRepository, CollaborationRepository>();
+
+        // ===== Phase 3A: Real-Time Collaboration Services =====
+
+        // Connection Manager (Singleton for in-memory tracking)
+        // For production scale-out, use Redis-based implementation
+        services.AddSingleton<IConnectionManager, ConnectionManager>();
+
+        // ======================================================
 
         // External Services (optional - only register if configured)
         AddExternalServices(services, configuration, logger);

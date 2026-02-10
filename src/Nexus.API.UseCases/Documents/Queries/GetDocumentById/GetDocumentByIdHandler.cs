@@ -57,7 +57,7 @@ public class GetDocumentByIdHandler : IRequestHandler<GetDocumentByIdQuery, GetD
       }).ToList(),
       Permissions = new PermissionsDto
       {
-        CanEdit = document.CanEdit(new UserId(userId)),
+        CanEdit = document.CanEdit(userId),
         CanDelete = document.CreatedBy == userId,
         CanShare = document.CreatedBy == userId,
         IsOwner = document.CreatedBy == userId

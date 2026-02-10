@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Nexus.API.Core.Interfaces;
+using UserIdValueObject = Nexus.API.Core.ValueObjects.UserId;
 using EmailValueObject = Nexus.API.Core.ValueObjects.Email;
 using Nexus.API.Core.ValueObjects;
 
@@ -18,7 +19,7 @@ public class CurrentUserService : ICurrentUserService
     _httpContextAccessor = httpContextAccessor;
   }
 
-  public UserId? UserId
+  public UserIdValueObject? UserId
   {
     get
     {
@@ -29,7 +30,7 @@ public class CurrentUserService : ICurrentUserService
         return null;
 
       if (Guid.TryParse(userIdClaim, out var guid))
-        return new UserId(guid);
+        return UserIdValueObject.From(guid);
 
       return null;
     }
@@ -61,13 +62,13 @@ public class CurrentUserService : ICurrentUserService
   public bool IsAuthenticated =>
     _httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated ?? false;
 
-  public UserId GetRequiredUserId()
+  public UserIdValueObject GetRequiredUserId()
   {
     var userId = UserId;
 
     if (userId == null)
       throw new UnauthorizedAccessException("User is not authenticated");
 
-    return userId.Value;
+    return userId ?? throw new UnauthorizedAccessException("User is not authenticated");
   }
 }

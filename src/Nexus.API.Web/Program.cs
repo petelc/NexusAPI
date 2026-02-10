@@ -12,6 +12,8 @@ using Nexus.API.Infrastructure.Services;
 using Traxs.SharedKernel;
 using Nexus.API.Core.Interfaces;
 using Nexus.API.Infrastructure.Data.Repositories;
+using Nexus.API.Web.Extensions;
+using Nexus.API.Web.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -119,6 +121,8 @@ builder.Services.AddScoped<ICodeSnippetRepository, CodeSnippetRepository>();
 // Add Tag repository
 builder.Services.AddScoped<ITagRepository, TagRepository>();
 
+builder.Services.AddScoped<ITeamRepository, TeamRepository>();
+
 // Add UrlEncoder for 2FA QR code generation
 builder.Services.AddSingleton<System.Text.Encodings.Web.UrlEncoder>(
   System.Text.Encodings.Web.UrlEncoder.Default);
@@ -140,6 +144,17 @@ builder.Services.SwaggerDocument(o =>
   };
 });
 
+// Configure SignalR for real-time collaboration
+builder.Services.AddSignalR(options =>
+{
+  options.EnableDetailedErrors = builder.Environment.IsDevelopment();
+  options.MaximumReceiveMessageSize = 102_400; // 100 KB
+  options.KeepAliveInterval = TimeSpan.FromSeconds(15);
+  options.ClientTimeoutInterval = TimeSpan.FromSeconds(30);
+});
+
+builder.Services.AddCollaborationServices();
+
 
 
 var app = builder.Build();
@@ -152,6 +167,8 @@ using (var scope = app.Services.CreateScope())
 
 // Configure middleware pipeline
 app.ConfigureMiddleware();
+
+app.MapHub<CollaborationHub>("/hubs/collaboration");
 
 try
 {

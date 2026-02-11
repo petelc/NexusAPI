@@ -1,3 +1,4 @@
+using MediatR;
 using System.Security.Claims;
 using FastEndpoints;
 using Nexus.API.UseCases.Workspaces.Commands;
@@ -10,11 +11,11 @@ namespace Nexus.API.Web.Endpoints.Workspaces;
 /// </summary>
 public class DeleteWorkspaceEndpoint : EndpointWithoutRequest
 {
-  private readonly DeleteWorkspaceHandler _handler;
+  private readonly IMediator _mediator;
 
-  public DeleteWorkspaceEndpoint(DeleteWorkspaceHandler handler)
+  public DeleteWorkspaceEndpoint(IMediator mediator)
   {
-    _handler = handler;
+    _mediator = mediator;
   }
 
   public override void Configure()
@@ -58,7 +59,7 @@ public class DeleteWorkspaceEndpoint : EndpointWithoutRequest
       var command = new DeleteWorkspaceCommand(workspaceId);
 
       // Handle
-      var result = await _handler.Handle(command, ct);
+      var result = await _mediator.Send(command, ct);
 
       if (result.IsSuccess)
       {

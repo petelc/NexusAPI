@@ -1,17 +1,19 @@
 using MediatR;
+using Ardalis.Result;
 using Microsoft.Extensions.Logging;
 using Nexus.API.Core.Aggregates.TeamAggregate;
 using Nexus.API.Core.Enums;
 using Nexus.API.Core.Interfaces;
 using Nexus.API.Core.ValueObjects;
 using Nexus.API.UseCases.Teams.Commands;
+using Nexus.API.UseCases.Teams.DTOs;
 
 namespace Nexus.API.UseCases.Teams.Handlers;
 
 /// <summary>
 /// Handler for updating team details
 /// </summary>
-public sealed class UpdateTeamCommandHandler
+public sealed class UpdateTeamCommandHandler : IRequestHandler<UpdateTeamCommand, Result<TeamDto>>
 {
     private readonly ITeamRepository _teamRepository;
     private readonly ICurrentUserService _currentUserService;
@@ -27,7 +29,7 @@ public sealed class UpdateTeamCommandHandler
         _logger = logger;
     }
 
-    public async Task<Result<UpdateTeamResult>> Handle(UpdateTeamCommand request, CancellationToken cancellationToken)
+    public async Task<Result<TeamDto>> Handle(UpdateTeamCommand request, CancellationToken cancellationToken)
     {
         try
         {

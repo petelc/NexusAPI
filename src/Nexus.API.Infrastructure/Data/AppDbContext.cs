@@ -10,6 +10,7 @@ using Nexus.API.Core.Aggregates.CollectionAggregate;
 using Nexus.API.Core.Aggregates.WorkspaceAggregate;
 using Nexus.API.Core.Aggregates.TeamAggregate;
 using Nexus.API.Core.Aggregates.CollaborationAggregate;
+using Nexus.API.Core.Aggregates.ResourcePermissions;
 
 
 namespace Nexus.API.Infrastructure.Data;
@@ -42,6 +43,8 @@ public class AppDbContext : DbContext
     public DbSet<Comment> Comments => Set<Comment>();
     public DbSet<SessionChange> SessionChanges => Set<SessionChange>();
 
+    public DbSet<ResourcePermission> ResourcePermissions => Set<ResourcePermission>();
+
     // Add RefreshToken DbSet
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
@@ -69,6 +72,10 @@ public class AppDbContext : DbContext
         modelBuilder.ApplyConfiguration(new SessionParticipantConfiguration());
         modelBuilder.ApplyConfiguration(new CommentConfiguration());
         modelBuilder.ApplyConfiguration(new SessionChangeConfiguration());
+
+        modelBuilder.ApplyConfiguration(new ResourcePermissionConfiguration());
+
+
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

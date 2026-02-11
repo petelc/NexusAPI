@@ -1,3 +1,4 @@
+using MediatR;
 using System.Security.Claims;
 using FastEndpoints;
 using Nexus.API.UseCases.Workspaces.Commands;
@@ -10,11 +11,11 @@ namespace Nexus.API.Web.Endpoints.Workspaces;
 /// </summary>
 public class RemoveMemberEndpoint : EndpointWithoutRequest
 {
-  private readonly RemoveMemberHandler _handler;
+  private readonly IMediator _mediator;
 
-  public RemoveMemberEndpoint(RemoveMemberHandler handler)
+  public RemoveMemberEndpoint(IMediator mediator)
   {
-    _handler = handler;
+    _mediator = mediator;
   }
 
   public override void Configure()
@@ -66,7 +67,7 @@ public class RemoveMemberEndpoint : EndpointWithoutRequest
       var command = new RemoveMemberCommand(workspaceId, userId);
 
       // Handle
-      var result = await _handler.Handle(command, ct);
+      var result = await _mediator.Send(command, ct);
 
       if (result.IsSuccess)
       {

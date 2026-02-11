@@ -1,3 +1,4 @@
+using MediatR;
 using FastEndpoints;
 using System.Security.Claims;
 using Nexus.API.UseCases.Collaboration.Handlers;
@@ -13,11 +14,11 @@ namespace Nexus.API.Web.Endpoints.Collaboration;
 /// </summary>
 public class GetResourceCommentsEndpoint : EndpointWithoutRequest
 {
-    private readonly GetResourceCommentsQueryHandler _handler;
+    private readonly IMediator _mediator;
 
-    public GetResourceCommentsEndpoint(GetResourceCommentsQueryHandler handler)
+    public GetResourceCommentsEndpoint(IMediator mediator)
     {
-        _handler = handler;
+        _mediator = mediator;
     }
 
     public override void Configure()
@@ -66,7 +67,7 @@ public class GetResourceCommentsEndpoint : EndpointWithoutRequest
 
         try
         {
-            var queryResult = await _handler.Handle(query, ct);
+            var queryResult = await _mediator.Send(query, ct);
 
             if (queryResult.IsSuccess)
             {

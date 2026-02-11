@@ -1,3 +1,4 @@
+using MediatR;
 using System.Security.Claims;
 using FastEndpoints;
 using Nexus.API.UseCases.Workspaces.Commands;
@@ -10,11 +11,11 @@ namespace Nexus.API.Web.Endpoints.Workspaces;
 /// </summary>
 public class UpdateWorkspaceEndpoint : EndpointWithoutRequest
 {
-  private readonly UpdateWorkspaceHandler _handler;
+  private readonly IMediator _mediator;
 
-  public UpdateWorkspaceEndpoint(UpdateWorkspaceHandler handler)
+  public UpdateWorkspaceEndpoint(IMediator mediator)
   {
-    _handler = handler;
+    _mediator = mediator;
   }
 
   public override void Configure()
@@ -70,7 +71,7 @@ public class UpdateWorkspaceEndpoint : EndpointWithoutRequest
         request.Description);
 
       // Handle
-      var result = await _handler.Handle(command, ct);
+      var result = await _mediator.Send(command, ct);
 
       if (result.IsSuccess)
       {

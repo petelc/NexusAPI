@@ -57,6 +57,8 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddHttpContextAccessor(); // Required for CurrentUserService
 
+        // Add Tag repository
+        services.AddScoped<ITagRepository, TagRepository>();
         // Register Diagram Repository
         services.AddScoped<IDiagramRepository, DiagramRepository>();
         services.AddScoped<ICollectionRepository, CollectionRepository>();
@@ -70,6 +72,8 @@ public static class InfrastructureServiceExtensions
         // Connection Manager (Singleton for in-memory tracking)
         // For production scale-out, use Redis-based implementation
         services.AddSingleton<IConnectionManager, ConnectionManager>();
+
+        services.AddScoped<IPermissionRepository, PermissionRepository>();
 
         // ======================================================
 

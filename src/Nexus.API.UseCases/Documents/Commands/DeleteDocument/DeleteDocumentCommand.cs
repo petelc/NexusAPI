@@ -1,5 +1,6 @@
 using FluentValidation;
 using MediatR;
+using Ardalis.Result;
 using Nexus.API.Core.Aggregates.DocumentAggregate;
 using Nexus.API.Core.Interfaces;
 
@@ -8,7 +9,7 @@ namespace Nexus.API.UseCases.Documents.Commands.DeleteDocument;
 /// <summary>
 /// Command to delete (soft delete) a document
 /// </summary>
-public record DeleteDocumentCommand : IRequest<bool>
+public record DeleteDocumentCommand : IRequest<Result>
 {
     public Guid DocumentId { get; init; }
     public Guid DeletedBy { get; init; }

@@ -1,4 +1,5 @@
 using Ardalis.Result;
+using MediatR;
 using Nexus.API.Core.Aggregates.CollaborationAggregate;
 using Nexus.API.Core.Interfaces;
 using Nexus.API.Core.ValueObjects;
@@ -12,7 +13,7 @@ namespace Nexus.API.UseCases.Collaboration.Handlers;
 /// Handler for adding a reply to a comment.
 /// Depends only on UseCases-layer interfaces - Clean Architecture compliant.
 /// </summary>
-public class AddReplyCommandHandler
+public class AddReplyCommandHandler : IRequestHandler<AddReplyCommand, Result<CommentResponseDto>>
 {
     private readonly ICollaborationRepository _collaborationRepository;
     private readonly ICollaborationNotificationService _notificationService;

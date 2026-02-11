@@ -1,3 +1,4 @@
+using MediatR;
 using FastEndpoints;
 using System.Security.Claims;
 using Nexus.API.UseCases.Teams.Handlers;
@@ -12,11 +13,11 @@ namespace Nexus.API.Web.Endpoints.Teams;
 /// </summary>
 public class ChangeTeamMemberRoleEndpoint : EndpointWithoutRequest
 {
-    private readonly ChangeTeamMemberRoleCommandHandler _handler;
+    private readonly IMediator _mediator;
 
-    public ChangeTeamMemberRoleEndpoint(ChangeTeamMemberRoleCommandHandler handler)
+    public ChangeTeamMemberRoleEndpoint(IMediator mediator)
     {
-        _handler = handler;
+        _mediator = mediator;
     }
 
     public override void Configure()
@@ -60,7 +61,7 @@ public class ChangeTeamMemberRoleEndpoint : EndpointWithoutRequest
 
         try
         {
-            var result = await _handler.Handle(teamId, targetUserId, request.NewRole, ct);
+            var result = await _mediator.Send(teamId, targetUserId, request.NewRole, ct);
 
             if (result.IsSuccess)
             {

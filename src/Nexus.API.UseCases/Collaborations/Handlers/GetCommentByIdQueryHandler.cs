@@ -1,4 +1,5 @@
 using Ardalis.Result;
+using MediatR;
 using Nexus.API.Core.Interfaces;
 using Nexus.API.UseCases.Collaboration.Queries;
 using Nexus.API.UseCases.Collaboration.DTOs;
@@ -10,7 +11,7 @@ namespace Nexus.API.UseCases.Collaboration.Handlers;
 /// <summary>
 /// Handler for getting a single comment by ID with all replies
 /// </summary>
-public class GetCommentByIdQueryHandler
+public class GetCommentByIdQueryHandler : IRequestHandler<GetCommentByIdQuery, Result<CommentResponseDto>>
 {
     private readonly ICollaborationRepository _collaborationRepository;
 

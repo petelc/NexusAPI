@@ -5,6 +5,11 @@ using Nexus.API.UseCases.Collections.Handlers;
 using Nexus.API.UseCases.Workspaces.Handlers;
 using Nexus.API.UseCases.Teams.Handlers;
 using Nexus.API.UseCases.Collaboration.Handlers;
+using Nexus.API.UseCases.Permissions.Commands;
+using Nexus.API.UseCases.Permissions.Queries;
+using Nexus.API.UseCases.Documents.Commands.UpdateDocument;
+using Nexus.API.UseCases.Documents.Commands;
+using Nexus.API.UseCases.Documents.Queries;
 
 namespace Nexus.API.UseCases;
 
@@ -22,89 +27,6 @@ public static class UseCasesServiceExtensions
 
     // Register AutoMapper
     services.AddAutoMapper(typeof(UseCasesServiceExtensions).Assembly);
-
-    // Collections
-    // Command Handlers
-    services.AddScoped<CreateCollectionHandler>();
-    services.AddScoped<UpdateCollectionHandler>();
-    services.AddScoped<DeleteCollectionHandler>();
-    services.AddScoped<AddItemToCollectionHandler>();
-    services.AddScoped<RemoveItemFromCollectionHandler>();
-    services.AddScoped<ReorderItemHandler>();
-
-    // Query Handlers
-    services.AddScoped<GetCollectionByIdHandler>();
-    services.AddScoped<GetRootCollectionsHandler>();
-    services.AddScoped<GetChildCollectionsHandler>();
-    services.AddScoped<SearchCollectionsHandler>();
-    services.AddScoped<GetCollectionBreadcrumbHandler>();
-
-    // Workspace
-    // Command Handlers
-    services.AddScoped<CreateWorkspaceHandler>();
-    services.AddScoped<UpdateWorkspaceHandler>();
-    services.AddScoped<DeleteWorkspaceHandler>();
-    services.AddScoped<AddMemberHandler>();
-    services.AddScoped<RemoveMemberHandler>();
-    services.AddScoped<ChangeMemberRoleHandler>();
-
-    // Query Handlers
-    services.AddScoped<GetWorkspaceByIdHandler>();
-    services.AddScoped<GetUserWorkspacesHandler>();
-    services.AddScoped<GetTeamWorkspacesHandler>();
-    services.AddScoped<SearchWorkspacesHandler>();
-
-    // ====================================================================
-    // TEAMS HANDLERS
-    // ====================================================================
-    services.AddScoped<CreateTeamCommandHandler>();
-    services.AddScoped<UpdateTeamCommandHandler>();
-    services.AddScoped<DeleteTeamCommandHandler>();
-    services.AddScoped<AddTeamMemberCommandHandler>();
-    services.AddScoped<RemoveTeamMemberCommandHandler>();
-    services.AddScoped<ChangeTeamMemberRoleCommandHandler>();
-    services.AddScoped<GetTeamByIdQueryHandler>();
-    services.AddScoped<GetUserTeamsQueryHandler>();
-    services.AddScoped<SearchTeamsQueryHandler>();
-
-    // ====================================================================
-    // WORKSPACES HANDLERS
-    // ====================================================================
-    services.AddScoped<CreateWorkspaceHandler>();
-    services.AddScoped<UpdateWorkspaceHandler>();
-    services.AddScoped<DeleteWorkspaceHandler>();
-    services.AddScoped<AddMemberHandler>();
-    services.AddScoped<RemoveMemberHandler>();
-    services.AddScoped<ChangeMemberRoleHandler>();
-    services.AddScoped<GetWorkspaceByIdHandler>();
-    services.AddScoped<GetUserWorkspacesHandler>();
-    services.AddScoped<GetTeamWorkspacesHandler>();
-    services.AddScoped<SearchWorkspacesHandler>();
-
-    // ====================================================================
-    // COLLABORATION HANDLERS
-    // ====================================================================
-    // Session Command Handlers
-    services.AddScoped<StartSessionCommandHandler>();
-    services.AddScoped<EndSessionCommandHandler>();
-    services.AddScoped<JoinSessionCommandHandler>();
-    services.AddScoped<LeaveSessionCommandHandler>();
-
-    // Session Query Handlers
-    services.AddScoped<GetSessionByIdQueryHandler>();
-    services.AddScoped<GetActiveSessionsQueryHandler>();
-    services.AddScoped<GetUserSessionsQueryHandler>();
-
-    // Comment Command Handlers
-    services.AddScoped<AddCommentCommandHandler>();
-    services.AddScoped<UpdateCommentCommandHandler>();
-    services.AddScoped<DeleteCommentCommandHandler>();
-    services.AddScoped<AddReplyCommandHandler>();
-
-    // Comment Query Handlers
-    services.AddScoped<GetCommentByIdQueryHandler>();
-    services.AddScoped<GetResourceCommentsQueryHandler>();
-
 
     return services;
   }

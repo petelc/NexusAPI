@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Nexus.API.Core.Aggregates.DocumentAggregate;
 using Nexus.API.Core.Interfaces;
+using Nexus.API.Core.ValueObjects;
 using Nexus.API.Infrastructure.Data;
 
 namespace Nexus.API.Infrastructure.Data.Repositories;
@@ -15,15 +16,15 @@ public class TagRepository : ITagRepository
 
   public TagRepository(AppDbContext dbContext)
   {
-    _dbContext = dbContext;
+    _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
   }
 
   public async Task<Tag?> GetByIdAsync(
-    Guid id,
-    CancellationToken cancellationToken = default)
+        TagId id,
+        CancellationToken cancellationToken = default)
   {
     return await _dbContext.Set<Tag>()
-      .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+        .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
   }
 
   public async Task<Tag?> GetByNameAsync(
@@ -33,6 +34,20 @@ public class TagRepository : ITagRepository
     var normalizedName = name.Trim().ToLowerInvariant();
     return await _dbContext.Set<Tag>()
       .FirstOrDefaultAsync(t => t.Name == normalizedName, cancellationToken);
+  }
+
+  public async Task<IReadOnlyList<Tag>> GetByNamesAsync(
+        IEnumerable<string> names,
+        CancellationToken cancellationToken = default)
+  {
+    var normalised = names
+        .Select(n => n.Trim().ToLowerInvariant())
+        .Distinct()
+        .ToList();
+
+    return await _dbContext.Set<Tag>()
+        .Where(t => normalised.Contains(t.Name))
+        .ToListAsync(cancellationToken);
   }
 
   public async Task<IEnumerable<Tag>> GetAllAsync(
@@ -55,40 +70,55 @@ public class TagRepository : ITagRepository
   }
 
   public async Task<Tag> AddAsync(
-    Tag tag,
-    CancellationToken cancellationToken = default)
+        Tag entity,
+        CancellationToken cancellationToken = default)
   {
-    await _dbContext.Set<Tag>().AddAsync(tag, cancellationToken);
+    _dbContext.Set<Tag>().Add(entity);
     await _dbContext.SaveChangesAsync(cancellationToken);
-    return tag;
+    return entity;
   }
 
   public async Task UpdateAsync(
-    Tag tag,
-    CancellationToken cancellationToken = default)
+        Tag entity,
+        CancellationToken cancellationToken = default)
   {
-    _dbContext.Set<Tag>().Update(tag);
+    _dbContext.Set<Tag>().Update(entity);
     await _dbContext.SaveChangesAsync(cancellationToken);
   }
 
   public async Task DeleteAsync(
-    Tag tag,
-    CancellationToken cancellationToken = default)
+        Tag entity,
+        CancellationToken cancellationToken = default)
   {
-    _dbContext.Set<Tag>().Remove(tag);
+    _dbContext.Set<Tag>().Remove(entity);
     await _dbContext.SaveChangesAsync(cancellationToken);
   }
 
-  public async Task<Tag> GetOrCreateAsync(
-    string name,
-    string? color = null,
-    CancellationToken cancellationToken = default)
+  public async Task<Tag> GetOrCreateByNameAsync(
+        string name,
+        CancellationToken cancellationToken = default)
   {
-    var existingTag = await GetByNameAsync(name, cancellationToken);
-    if (existingTag != null)
-      return existingTag;
+    var normalised = name.Trim().ToLowerInvariant();
 
-    var newTag = Tag.Create(name, color);
-    return await AddAsync(newTag, cancellationToken);
+    var existing = await _dbContext.Set<Tag>()
+        .FirstOrDefaultAsync(t => t.Name == normalised, cancellationToken);
+
+    if (existing is not null)
+      return existing;
+
+    var newTag = Tag.Create(normalised);
+    _dbContext.Set<Tag>().Add(newTag);
+    await _dbContext.SaveChangesAsync(cancellationToken);
+
+    return newTag;
   }
+
+  public Task<Tag> GetOrCreateAsync(string name, string? color = null, CancellationToken cancellationToken = default)
+  {
+    throw new NotImplementedException();
+  }
+
+
+
+
 }

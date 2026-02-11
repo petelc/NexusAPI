@@ -12,7 +12,7 @@ namespace Nexus.API.UseCases.Teams.Handlers;
 /// <summary>
 /// Handler for searching teams
 /// </summary>
-public sealed class SearchTeamsQueryHandler
+public sealed class SearchTeamsQueryHandler : IRequestHandler<SearchTeamsQuery, Result<IEnumerable<TeamSummaryDto>>>
 {
     private readonly ITeamRepository _teamRepository;
     private readonly ICurrentUserService _currentUserService;
@@ -25,18 +25,18 @@ public sealed class SearchTeamsQueryHandler
         _currentUserService = currentUserService;
     }
 
-    public async Task<Result<List<TeamSummaryDto>>> Handle(string searchTerm, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<TeamSummaryDto>>> Handle(SearchTeamsQuery request, CancellationToken cancellationToken)
     {
         try
         {
             var userId = _currentUserService.UserId ?? throw new UnauthorizedAccessException("User ID not found");
 
-            if (string.IsNullOrWhiteSpace(searchTerm))
+            if (string.IsNullOrWhiteSpace(request.SearchTerm))
             {
                 return Result.Success(new List<TeamSummaryDto>());
             }
 
-            var teams = await _teamRepository.SearchByNameAsync(searchTerm, cancellationToken);
+            var teams = await _teamRepository.SearchByNameAsync(request.SearchTerm, cancellationToken);
 
             var dtos = teams
                 .Where(team => team.IsMember(userId))

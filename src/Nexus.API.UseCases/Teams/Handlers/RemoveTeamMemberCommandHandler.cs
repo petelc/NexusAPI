@@ -11,7 +11,7 @@ namespace Nexus.API.UseCases.Teams.Handlers;
 /// <summary>
 /// Handler for removing a member from a team
 /// </summary>
-public sealed class RemoveTeamMemberCommandHandler
+public sealed class RemoveTeamMemberCommandHandler : IRequestHandler<RemoveTeamMemberCommand, Result>
 {
     private readonly ITeamRepository _teamRepository;
     private readonly ICurrentUserService _currentUserService;
@@ -27,13 +27,13 @@ public sealed class RemoveTeamMemberCommandHandler
         _logger = logger;
     }
 
-    public async Task<Result> Handle(Guid teamId, Guid targetUserId, CancellationToken cancellationToken)
+    public async Task<Result> Handle(RemoveTeamMemberCommand request, CancellationToken cancellationToken)
     {
         try
         {
             var currentUserId = _currentUserService.UserId ?? throw new UnauthorizedAccessException("User ID not found");
 
-            var team = await _teamRepository.GetByIdWithMembersAsync(TeamId.Create(teamId), cancellationToken);
+            var team = await _teamRepository.GetByIdWithMembersAsync(TeamId.Create(request.TeamId), cancellationToken);
 
             if (team == null)
             {
@@ -41,17 +41,17 @@ public sealed class RemoveTeamMemberCommandHandler
             }
 
             var canManage = team.CanManageMembers(currentUserId);
-            var isRemovingSelf = targetUserId == currentUserId;
+            var isRemovingSelf = request.UserId == currentUserId;
 
             if (!canManage && !isRemovingSelf)
             {
                 return Result.Unauthorized();
             }
 
-            team.RemoveMember(targetUserId);
+            team.RemoveMember(request.UserId);
             await _teamRepository.UpdateAsync(team, cancellationToken);
 
-            _logger.LogInformation("User {UserId} removed from team {TeamId}", targetUserId, team.Id.Value);
+            _logger.LogInformation("User {UserId} removed from team {TeamId}", request.UserId, team.Id.Value);
 
             return Result.Success();
         }
@@ -61,7 +61,7 @@ public sealed class RemoveTeamMemberCommandHandler
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error removing member from team {TeamId}", teamId);
+            _logger.LogError(ex, "Error removing member from team {TeamId}", request.TeamId);
             return Result.Error(ex.Message);
         }
     }

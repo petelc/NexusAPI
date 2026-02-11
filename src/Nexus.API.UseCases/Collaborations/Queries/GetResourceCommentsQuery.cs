@@ -1,4 +1,5 @@
 using Nexus.API.Core.ValueObjects;
+using MediatR;
 
 namespace Nexus.API.UseCases.Collaboration.Queries;
 
@@ -8,4 +9,4 @@ namespace Nexus.API.UseCases.Collaboration.Queries;
 public record GetResourceCommentsQuery(
     string ResourceType,
     ResourceId ResourceId,
-    bool IncludeDeleted = false);
+    bool IncludeDeleted = false) : IRequest<Result<IEnumerable<CommentResponseDto>>>;

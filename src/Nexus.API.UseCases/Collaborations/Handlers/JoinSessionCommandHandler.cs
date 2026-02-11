@@ -1,4 +1,5 @@
 using Ardalis.Result;
+using MediatR;
 using Nexus.API.Core.Interfaces;
 using Nexus.API.UseCases.Collaboration.Commands;
 using Nexus.API.UseCases.Collaboration.Interfaces;
@@ -10,7 +11,7 @@ namespace Nexus.API.UseCases.Collaboration.Handlers;
 /// Depends only on UseCases-layer interfaces - Clean Architecture compliant.
 /// Note: WebSocket join is handled separately by CollaborationHub.JoinSession.
 /// </summary>
-public class JoinSessionCommandHandler
+public class JoinSessionCommandHandler : IRequestHandler<JoinSessionCommand, Result>
 {
     private readonly ICollaborationRepository _collaborationRepository;
     private readonly ICollaborationNotificationService _notificationService;

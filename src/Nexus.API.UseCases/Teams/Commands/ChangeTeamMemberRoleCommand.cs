@@ -1,4 +1,6 @@
 using MediatR;
+using Ardalis.Result;
+using Nexus.API.UseCases.Teams.DTOs;
 
 namespace Nexus.API.UseCases.Teams.Commands;
 
@@ -8,7 +10,7 @@ namespace Nexus.API.UseCases.Teams.Commands;
 public sealed record ChangeTeamMemberRoleCommand(
     Guid TeamId,
     Guid UserId,
-    string NewRole) : IRequest<ChangeTeamMemberRoleResult>;
+    string NewRole) : IRequest<Result<TeamMemberDto>>;
 
 /// <summary>
 /// Result of changing a member's role

@@ -1,17 +1,19 @@
 using MediatR;
+using Ardalis.Result;
 using Microsoft.Extensions.Logging;
 using Nexus.API.Core.Aggregates.TeamAggregate;
 using Nexus.API.Core.Enums;
 using Nexus.API.Core.Interfaces;
 using Nexus.API.Core.ValueObjects;
 using Nexus.API.UseCases.Teams.Commands;
+using Nexus.API.UseCases.Teams.DTOs;
 
 namespace Nexus.API.UseCases.Teams.Handlers;
 
 /// <summary>
 /// Handler for adding a member to a team
 /// </summary>
-public sealed class AddTeamMemberCommandHandler
+public sealed class AddTeamMemberCommandHandler : IRequestHandler<AddTeamMemberCommand, Result<TeamMemberDto>>
 {
     private readonly ITeamRepository _teamRepository;
     private readonly ICurrentUserService _currentUserService;

@@ -1,3 +1,4 @@
+using MediatR;
 using FastEndpoints;
 using System.Security.Claims;
 using Nexus.API.UseCases.Collections.Queries;
@@ -12,11 +13,11 @@ namespace Nexus.API.Web.Endpoints.Collections;
 /// </summary>
 public class GetCollectionByIdEndpoint : EndpointWithoutRequest
 {
-  private readonly GetCollectionByIdHandler _handler;
+  private readonly IMediator _mediator;
 
-  public GetCollectionByIdEndpoint(GetCollectionByIdHandler handler)
+  public GetCollectionByIdEndpoint(IMediator mediator)
   {
-    _handler = handler;
+    _mediator = mediator;
   }
 
   public override void Configure()
@@ -49,7 +50,7 @@ public class GetCollectionByIdEndpoint : EndpointWithoutRequest
 
     try
     {
-      var result = await _handler.Handle(query, ct);
+      var result = await _mediator.Send(query, ct);
 
       if (result.IsSuccess)
       {

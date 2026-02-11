@@ -11,7 +11,7 @@ namespace Nexus.API.UseCases.Teams.Handlers;
 /// <summary>
 /// Handler for deleting a team
 /// </summary>
-public sealed class DeleteTeamCommandHandler
+public sealed class DeleteTeamCommandHandler : IRequestHandler<DeleteTeamCommand, Result>
 {
     private readonly ITeamRepository _teamRepository;
     private readonly ICurrentUserService _currentUserService;
@@ -27,13 +27,13 @@ public sealed class DeleteTeamCommandHandler
         _logger = logger;
     }
 
-    public async Task<Result> Handle(Guid teamId, CancellationToken cancellationToken)
+    public async Task<Result> Handle(DeleteTeamCommand request, CancellationToken cancellationToken)
     {
         try
         {
             var userId = _currentUserService.UserId ?? throw new UnauthorizedAccessException("User ID not found");
 
-            var team = await _teamRepository.GetByIdWithMembersAsync(TeamId.Create(teamId), cancellationToken);
+            var team = await _teamRepository.GetByIdWithMembersAsync(TeamId.Create(request.TeamId), cancellationToken);
 
             if (team == null)
             {

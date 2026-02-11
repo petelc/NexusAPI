@@ -62,15 +62,6 @@ public static class MiddlewareConfig
     // Health checks
     app.MapHealthChecks("/health");
 
-    // FastEndpoints
-    app.UseFastEndpoints(config =>
-    {
-      config.Endpoints.RoutePrefix = "api";
-      config.Endpoints.ShortNames = true;
-      config.Versioning.Prefix = "v";
-      config.Versioning.DefaultVersion = 1;
-    });
-
     // Swagger (FastEndpoints version) - available in all environments
     if (app.Environment.IsDevelopment())
     {

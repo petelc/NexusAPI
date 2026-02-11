@@ -1,4 +1,5 @@
 using Nexus.API.Core.ValueObjects;
+using MediatR;
 
 namespace Nexus.API.UseCases.Collaboration.Commands;
 
@@ -11,4 +12,4 @@ public record AddCommentCommand(
     ResourceId ResourceId,
     UserId UserId,
     string Text,
-    int? Position);
+    int? Position) : IRequest<Result<CommentResponseDto>>;

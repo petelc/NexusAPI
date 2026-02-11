@@ -1,3 +1,4 @@
+using MediatR;
 using FastEndpoints;
 using System.Security.Claims;
 using Nexus.API.UseCases.Collaboration.Commands;
@@ -14,11 +15,11 @@ namespace Nexus.API.Web.Endpoints.Collaboration;
 /// </summary>
 public class ReplyToCommentEndpoint : EndpointWithoutRequest
 {
-    private readonly AddReplyCommandHandler _handler;
+    private readonly IMediator _mediator;
 
-    public ReplyToCommentEndpoint(AddReplyCommandHandler handler)
+    public ReplyToCommentEndpoint(IMediator mediator)
     {
-        _handler = handler;
+        _mediator = mediator;
     }
 
     public override void Configure()
@@ -65,7 +66,7 @@ public class ReplyToCommentEndpoint : EndpointWithoutRequest
 
         try
         {
-            var result = await _handler.Handle(command, ct);
+            var result = await _mediator.Send(command, ct);
 
             if (result.IsSuccess)
             {

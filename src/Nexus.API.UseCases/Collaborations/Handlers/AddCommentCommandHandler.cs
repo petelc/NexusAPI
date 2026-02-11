@@ -1,4 +1,5 @@
 using Ardalis.Result;
+using MediatR;
 using Nexus.API.Core.Aggregates.CollaborationAggregate;
 using Nexus.API.Core.Enums;
 using Nexus.API.Core.Interfaces;
@@ -13,7 +14,7 @@ namespace Nexus.API.UseCases.Collaboration.Handlers;
 /// Handler for adding a comment to a resource.
 /// Depends only on UseCases-layer interfaces - Clean Architecture compliant.
 /// </summary>
-public class AddCommentCommandHandler
+public class AddCommentCommandHandler : IRequestHandler<AddCommentCommand, Result<CommentResponseDto>>
 {
     private readonly ICollaborationRepository _collaborationRepository;
     private readonly ICollaborationNotificationService _notificationService;

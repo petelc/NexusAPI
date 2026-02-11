@@ -14,6 +14,8 @@ using Nexus.API.Core.Interfaces;
 using Nexus.API.Infrastructure.Data.Repositories;
 using Nexus.API.Web.Extensions;
 using Nexus.API.Web.Hubs;
+using Nexus.API.Web.Configuration;
+using Nexus.API.Web.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -118,8 +120,7 @@ builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 // Add Code Snippet repository
 builder.Services.AddScoped<ICodeSnippetRepository, CodeSnippetRepository>();
 
-// Add Tag repository
-builder.Services.AddScoped<ITagRepository, TagRepository>();
+
 
 builder.Services.AddScoped<ITeamRepository, TeamRepository>();
 
@@ -155,9 +156,17 @@ builder.Services.AddSignalR(options =>
 
 builder.Services.AddCollaborationServices();
 
-
+// Rate limiting (Phase A)
+builder.Services.AddNexusRateLimiting();
 
 var app = builder.Build();
+
+// Global exception handler — must be FIRST in the pipeline
+app.UseMiddleware<GlobalExceptionMiddleware>();
+
+// Rate limiter — after exception handler, before auth
+app.UseRateLimiter();
+app.UseNexusEndpoints();
 
 // Seed database
 using (var scope = app.Services.CreateScope())
@@ -167,6 +176,7 @@ using (var scope = app.Services.CreateScope())
 
 // Configure middleware pipeline
 app.ConfigureMiddleware();
+
 
 app.MapHub<CollaborationHub>("/hubs/collaboration");
 

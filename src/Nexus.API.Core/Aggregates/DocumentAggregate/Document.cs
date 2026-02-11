@@ -63,6 +63,24 @@ public class Document : EntityBase<DocumentId>, IAggregateRoot
         return document;
     }
 
+    public void UpdateTitle(Title newTitle, Guid userId)
+    {
+        Guard.Against.Null(newTitle, nameof(newTitle));
+        Guard.Against.Default(userId, nameof(userId));
+
+        if (IsDeleted)
+            throw new InvalidOperationException("Cannot update a deleted document");
+
+        if (Status == DocumentStatus.Archived)
+            throw new InvalidOperationException("Cannot update an archived document");
+
+        Title = newTitle;
+        UpdatedAt = DateTime.UtcNow;
+        LastEditedBy = userId;
+
+        RegisterDomainEvent(new DocumentUpdatedEvent(Id, userId));
+    }
+
     /// <summary>
     /// Update the document content and create a new version
     /// </summary>
@@ -123,6 +141,27 @@ public class Document : EntityBase<DocumentId>, IAggregateRoot
         LastEditedBy = userId;
 
         RegisterDomainEvent(new DocumentArchivedEvent(Id, userId));
+    }
+
+    /// <summary>
+    /// Update the document language code
+    /// </summary>
+    public void UpdateLanguageCode(string languageCode, Guid userId)
+    {
+        Guard.Against.NullOrWhiteSpace(languageCode, nameof(languageCode));
+        Guard.Against.Default(userId, nameof(userId));
+
+        if (IsDeleted)
+            throw new InvalidOperationException("Cannot update a deleted document");
+
+        if (Status == DocumentStatus.Archived)
+            throw new InvalidOperationException("Cannot update an archived document");
+
+        LanguageCode = languageCode;
+        UpdatedAt = DateTime.UtcNow;
+        LastEditedBy = userId;
+
+        RegisterDomainEvent(new DocumentUpdatedEvent(Id, userId));
     }
 
     /// <summary>

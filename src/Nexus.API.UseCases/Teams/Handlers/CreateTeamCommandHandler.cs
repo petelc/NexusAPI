@@ -1,4 +1,5 @@
 using Ardalis.Result;
+using MediatR;
 using Microsoft.Extensions.Logging;
 using Nexus.API.Core.Aggregates.TeamAggregate;
 using Nexus.API.Core.Interfaces;
@@ -10,7 +11,7 @@ namespace Nexus.API.UseCases.Teams.Handlers;
 /// <summary>
 /// Handler for creating a new team
 /// </summary>
-public sealed class CreateTeamCommandHandler
+public sealed class CreateTeamCommandHandler : IRequestHandler<CreateTeamCommand, Result<CreateTeamResult>>
 {
     private readonly ITeamRepository _teamRepository;
     private readonly ICurrentUserService _currentUserService;

@@ -1,4 +1,5 @@
 using Ardalis.Result;
+using MediatR;
 using Nexus.API.Core.Aggregates.CollaborationAggregate;
 using Nexus.API.Core.Enums;
 using Nexus.API.Core.Interfaces;
@@ -13,7 +14,7 @@ namespace Nexus.API.UseCases.Collaboration.Handlers;
 /// Handler for starting a collaboration session.
 /// Depends only on UseCases-layer interfaces — Clean Architecture compliant.
 /// </summary>
-public class StartSessionCommandHandler
+public class StartSessionCommandHandler : IRequestHandler<StartSessionCommand, Result<CollaborationSessionResponseDto>>
 {
     private readonly ICollaborationRepository _collaborationRepository;
     private readonly ICollaborationNotificationService _notificationService;

@@ -1,3 +1,4 @@
+using MediatR;
 using FastEndpoints;
 using Nexus.API.UseCases.Collections.Queries;
 using Nexus.API.UseCases.Collections.Handlers;
@@ -11,11 +12,11 @@ namespace Nexus.API.Web.Endpoints.Collections;
 /// </summary>
 public class SearchCollectionsEndpoint : EndpointWithoutRequest
 {
-  private readonly SearchCollectionsHandler _handler;
+  private readonly IMediator _mediator;
 
-  public SearchCollectionsEndpoint(SearchCollectionsHandler handler)
+  public SearchCollectionsEndpoint(IMediator mediator)
   {
-    _handler = handler;
+    _mediator = mediator;
   }
 
   public override void Configure()
@@ -48,7 +49,7 @@ public class SearchCollectionsEndpoint : EndpointWithoutRequest
 
     try
     {
-      var result = await _handler.Handle(query, ct);
+      var result = await _mediator.Send(query, ct);
 
       if (result.IsSuccess)
       {

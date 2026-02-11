@@ -1,4 +1,5 @@
 using MediatR;
+using Ardalis.Result;
 using Nexus.API.Core.Interfaces;
 using Nexus.API.Core.ValueObjects;
 using Nexus.API.UseCases.Collaboration.DTOs;
@@ -9,7 +10,7 @@ namespace Nexus.API.UseCases.Collaboration.Handlers;
 /// <summary>
 /// Handler for getting user sessions
 /// </summary>
-public class GetUserSessionsQueryHandler
+public class GetUserSessionsQueryHandler : IRequestHandler<GetUserSessionsQuery, Result<IEnumerable<CollaborationSessionResponseDto>>>
 {
     private readonly ICollaborationRepository _collaborationRepository;
 

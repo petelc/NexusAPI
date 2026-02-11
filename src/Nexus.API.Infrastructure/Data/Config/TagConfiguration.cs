@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Nexus.API.Core.Aggregates.DocumentAggregate;
+using Nexus.API.Core.ValueObjects;
 
 namespace Nexus.API.Infrastructure.Data.Config;
 
@@ -11,10 +12,14 @@ public class TagConfiguration : IEntityTypeConfiguration<Tag>
 {
     public void Configure(EntityTypeBuilder<Tag> builder)
     {
-        builder.ToTable("Tags");
+        builder.ToTable("Tags", "dbo");
 
         // Primary Key
         builder.HasKey(t => t.Id);
+
+        builder.Property(t => t.Id)
+            .HasConversion(id => id.Value, value => TagId.Create(value))
+            .IsRequired();
 
         // Scalar Properties
         builder.Property(t => t.Name)

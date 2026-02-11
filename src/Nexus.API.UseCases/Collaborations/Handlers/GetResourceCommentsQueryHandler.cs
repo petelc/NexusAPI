@@ -1,4 +1,5 @@
 using Ardalis.Result;
+using MediatR;
 using Nexus.API.Core.Aggregates.CollaborationAggregate;
 using Nexus.API.Core.Enums;
 using Nexus.API.Core.Interfaces;
@@ -11,7 +12,7 @@ namespace Nexus.API.UseCases.Collaboration.Handlers;
 /// <summary>
 /// Handler for getting comments for a specific resource
 /// </summary>
-public class GetResourceCommentsQueryHandler
+public class GetResourceCommentsQueryHandler : IRequestHandler<GetResourceCommentsQuery, Result<IEnumerable<CommentResponseDto>>>
 {
     private readonly ICollaborationRepository _collaborationRepository;
 

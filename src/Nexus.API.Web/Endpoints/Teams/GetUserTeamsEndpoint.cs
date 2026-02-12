@@ -1,7 +1,7 @@
 using MediatR;
 using FastEndpoints;
 using System.Security.Claims;
-using Nexus.API.UseCases.Teams.Handlers;
+using Nexus.API.UseCases.Teams.Queries;
 
 namespace Nexus.API.Web.Endpoints.Teams;
 
@@ -42,7 +42,8 @@ public class GetUserTeamsEndpoint : EndpointWithoutRequest
 
         try
         {
-            var result = await _mediator.Send(ct);
+            var query = new GetUserTeamsQuery();
+            var result = await _mediator.Send(query, ct);
 
             if (result.IsSuccess)
             {

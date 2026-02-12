@@ -1,7 +1,7 @@
 using MediatR;
 using FastEndpoints;
 using System.Security.Claims;
-using Nexus.API.UseCases.Teams.Handlers;
+using Nexus.API.UseCases.Teams.Queries;
 
 namespace Nexus.API.Web.Endpoints.Teams;
 
@@ -44,7 +44,8 @@ public class SearchTeamsEndpoint : EndpointWithoutRequest
 
         try
         {
-            var result = await _mediator.Send(searchTerm, ct);
+            var query = new SearchTeamsQuery(searchTerm);
+            var result = await _mediator.Send(query, ct);
 
             if (result.IsSuccess)
             {

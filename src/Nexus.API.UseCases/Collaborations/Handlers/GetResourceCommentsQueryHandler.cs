@@ -21,14 +21,14 @@ public class GetResourceCommentsQueryHandler : IRequestHandler<GetResourceCommen
         _collaborationRepository = collaborationRepository ?? throw new ArgumentNullException(nameof(collaborationRepository));
     }
 
-    public async Task<Result<CommentsResponseDto>> Handle(
+    public async Task<Result<IEnumerable<CommentResponseDto>>> Handle(
         GetResourceCommentsQuery query,
         CancellationToken cancellationToken)
     {
         // Validate resource type
         if (!Enum.TryParse<ResourceType>(query.ResourceType, true, out var resourceType))
         {
-            return Result<CommentsResponseDto>.Invalid(
+            return Result<IEnumerable<CommentResponseDto>>.Invalid(
                 new ValidationError { ErrorMessage = $"Invalid resource type: {query.ResourceType}" });
         }
 
@@ -43,13 +43,9 @@ public class GetResourceCommentsQueryHandler : IRequestHandler<GetResourceCommen
         var topLevelComments = comments.Where(c => c.ParentCommentId == null).ToList();
 
         // Map to response DTO
-        var response = new CommentsResponseDto
-        {
-            Comments = topLevelComments.Select(MapToResponseDto).ToList(),
-            TotalCount = topLevelComments.Count
-        };
+        var response = topLevelComments.Select(MapToResponseDto);
 
-        return Result<CommentsResponseDto>.Success(response);
+        return Result<IEnumerable<CommentResponseDto>>.Success(response);
     }
 
     private static CommentResponseDto MapToResponseDto(Comment comment)

@@ -68,8 +68,7 @@ public class UpdateDocumentEndpoint : Endpoint<UpdateDocumentRequest>
                 Title = request.Title,
                 Content = request.Content,
                 Status = request.Status,
-                UpdatedBy = userId,
-                LanguageCode = request.LanguageCode
+                UpdatedBy = userId
             };
 
             var result = await _mediator.Send(command, ct);

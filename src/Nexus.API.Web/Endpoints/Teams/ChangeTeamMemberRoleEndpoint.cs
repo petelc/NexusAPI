@@ -2,6 +2,7 @@ using MediatR;
 using FastEndpoints;
 using System.Security.Claims;
 using Nexus.API.UseCases.Teams.Handlers;
+using Nexus.API.UseCases.Teams.Commands;
 
 
 namespace Nexus.API.Web.Endpoints.Teams;
@@ -61,7 +62,8 @@ public class ChangeTeamMemberRoleEndpoint : EndpointWithoutRequest
 
         try
         {
-            var result = await _mediator.Send(teamId, targetUserId, request.NewRole, ct);
+            var command = new ChangeTeamMemberRoleCommand(teamId, targetUserId, request.NewRole);
+            var result = await _mediator.Send(command, ct);
 
             if (result.IsSuccess)
             {

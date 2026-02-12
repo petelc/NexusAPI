@@ -63,7 +63,15 @@ public sealed class UpdateTeamCommandHandler : IRequestHandler<UpdateTeamCommand
 
             _logger.LogInformation("Team {TeamId} updated by user {UserId}", team.Id.Value, userId);
 
-            var result = new UpdateTeamResult(team.Id, team.Name, team.Description, team.UpdatedAt);
+            var result = new TeamDto
+            {
+                Id = team.Id,
+                Name = team.Name,
+                Description = team.Description,
+                CreatedBy = team.CreatedBy,
+                CreatedAt = team.CreatedAt,
+                UpdatedAt = team.UpdatedAt
+            };
             return Result.Success(result);
         }
         catch (UnauthorizedAccessException)

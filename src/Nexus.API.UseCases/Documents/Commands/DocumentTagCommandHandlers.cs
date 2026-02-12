@@ -1,4 +1,5 @@
 using Ardalis.Result;
+using MediatR;
 using Nexus.API.Core.Aggregates.DocumentAggregate;
 using Nexus.API.Core.Interfaces;
 
@@ -13,11 +14,11 @@ namespace Nexus.API.UseCases.Documents.Commands;
 public record AddDocumentTagsCommand(
     Guid DocumentId,
     Guid UserId,
-    IReadOnlyList<string> TagNames);
+    IReadOnlyList<string> TagNames) : IRequest<Result>;
 
 // --- Handler ---
 
-public class AddDocumentTagsCommandHandler
+public class AddDocumentTagsCommandHandler : IRequestHandler<AddDocumentTagsCommand, Result>
 {
     private readonly IDocumentRepository _documentRepository;
     private readonly ITagRepository _tagRepository;
@@ -69,11 +70,11 @@ public class AddDocumentTagsCommandHandler
 public record RemoveDocumentTagCommand(
     Guid DocumentId,
     Guid UserId,
-    string TagName);
+    string TagName) : IRequest<Result>;
 
 // --- Handler ---
 
-public class RemoveDocumentTagCommandHandler
+public class RemoveDocumentTagCommandHandler : IRequestHandler<RemoveDocumentTagCommand, Result>
 {
     private readonly IDocumentRepository _documentRepository;
     private readonly ITagRepository _tagRepository;

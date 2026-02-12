@@ -33,7 +33,7 @@ public sealed class SearchTeamsQueryHandler : IRequestHandler<SearchTeamsQuery, 
 
             if (string.IsNullOrWhiteSpace(request.SearchTerm))
             {
-                return Result.Success(new List<TeamSummaryDto>());
+                return Result.Success(Enumerable.Empty<TeamSummaryDto>());
             }
 
             var teams = await _teamRepository.SearchByNameAsync(request.SearchTerm, cancellationToken);
@@ -50,8 +50,7 @@ public sealed class SearchTeamsQueryHandler : IRequestHandler<SearchTeamsQuery, 
                     UpdatedAt = team.UpdatedAt,
                     MemberCount = team.Members.Count(m => m.IsActive),
                     UserRole = team.GetMemberRole(userId)?.ToString()
-                })
-                .ToList();
+                });
 
             return Result.Success(dtos);
         }

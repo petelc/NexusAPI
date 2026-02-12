@@ -21,10 +21,10 @@ public class GetSessionByIdQueryHandler : IRequestHandler<GetSessionByIdQuery, R
     }
 
     public async Task<Result<CollaborationSessionResponseDto>> Handle(
-        SessionId sessionId,
+        GetSessionByIdQuery request,
         CancellationToken cancellationToken)
     {
-        var session = await _collaborationRepository.GetSessionByIdAsync(sessionId, cancellationToken);
+        var session = await _collaborationRepository.GetSessionByIdAsync(request.SessionId, cancellationToken);
         if (session == null)
         {
             return Result<CollaborationSessionResponseDto>.NotFound("Session not found");

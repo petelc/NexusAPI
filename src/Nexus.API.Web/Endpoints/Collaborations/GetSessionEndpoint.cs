@@ -3,6 +3,7 @@ using FastEndpoints;
 using System.Security.Claims;
 using Nexus.API.Core.ValueObjects;
 using Nexus.API.UseCases.Collaboration.Handlers;
+using Nexus.API.UseCases.Collaboration.Queries;
 
 namespace Nexus.API.Web.Endpoints.Collaboration;
 
@@ -51,7 +52,11 @@ public class GetSessionEndpoint : EndpointWithoutRequest
 
         try
         {
-            var result = await _mediator.Send(SessionId.Create(sessionId), ct);
+            var query = new GetSessionByIdQuery
+            {
+                SessionId = SessionId.Create(sessionId)
+            };
+            var result = await _mediator.Send(query, ct);
 
             if (result.IsSuccess)
             {

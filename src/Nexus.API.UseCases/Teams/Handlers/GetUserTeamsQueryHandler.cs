@@ -46,7 +46,7 @@ public sealed class GetUserTeamsQueryHandler : IRequestHandler<GetUserTeamsQuery
                     UserRole = team.GetMemberRole(userId)?.ToString()
                 })
                 .OrderBy(t => t.Name)
-                .ToList();
+                .AsEnumerable();
 
             return Result.Success(dtos);
         }

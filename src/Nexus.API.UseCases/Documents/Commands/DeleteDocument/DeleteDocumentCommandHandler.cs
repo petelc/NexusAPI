@@ -2,14 +2,14 @@ using Ardalis.Result;
 using Nexus.API.Core.Aggregates.DocumentAggregate;
 using Nexus.API.Core.Interfaces;
 
-namespace Nexus.API.UseCases.Documents.Commands;
+namespace Nexus.API.UseCases.Documents.Commands.DeleteDocument;
 
 // --- Command ---
 
-public record DeleteDocumentCommand(
-    Guid DocumentId,
-    Guid UserId,
-    bool Permanent = false);
+// public record DeleteDocumentCommand(
+//     Guid DocumentId,
+//     Guid UserId,
+//     bool Permanent = false);
 
 // --- Handler ---
 
@@ -33,7 +33,7 @@ public class DeleteDocumentCommandHandler : IRequestHandler<DeleteDocumentComman
         if (document is null || document.IsDeleted)
             return Result.NotFound("Document not found.");
 
-        if (document.CreatedBy != command.UserId)
+        if (document.CreatedBy != command.DeletedBy)
             return Result.Unauthorized();
 
         if (command.Permanent)
@@ -44,7 +44,7 @@ public class DeleteDocumentCommandHandler : IRequestHandler<DeleteDocumentComman
         else
         {
             // Soft delete — sets IsDeleted = true, preserves the record
-            document.Delete(command.UserId);
+            document.Delete(command.DeletedBy);
             await _documentRepository.UpdateAsync(document, cancellationToken);
         }
 

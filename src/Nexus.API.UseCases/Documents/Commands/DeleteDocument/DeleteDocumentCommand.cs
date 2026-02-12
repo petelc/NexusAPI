@@ -31,39 +31,4 @@ public class DeleteDocumentCommandValidator : AbstractValidator<DeleteDocumentCo
     }
 }
 
-/// <summary>
-/// Handler for DeleteDocumentCommand
-/// </summary>
-public class DeleteDocumentCommandHandler : IRequestHandler<DeleteDocumentCommand, bool>
-{
-    private readonly IDocumentRepository _documentRepository;
 
-    public DeleteDocumentCommandHandler(IDocumentRepository documentRepository)
-    {
-        _documentRepository = documentRepository;
-    }
-
-    public async Task<bool> Handle(DeleteDocumentCommand request, CancellationToken cancellationToken)
-    {
-        // Get the document
-        var documentId = DocumentId.From(request.DocumentId);
-        var document = await _documentRepository.GetByIdAsync(documentId, cancellationToken);
-
-        if (document == null)
-            return false;
-
-        if (request.Permanent)
-        {
-            // Permanent delete
-            await _documentRepository.DeleteAsync(document, cancellationToken);
-        }
-        else
-        {
-            // Soft delete
-            document.Delete(request.DeletedBy);
-            await _documentRepository.UpdateAsync(document, cancellationToken);
-        }
-
-        return true;
-    }
-}

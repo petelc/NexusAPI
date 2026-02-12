@@ -31,7 +31,7 @@ public sealed class UpdateDocumentCommandHandler : IRequestHandler<UpdateDocumen
 
         // Ownership or explicit permission check — owners are always the CreatedBy user.
         // Phase B's IPermissionService wires finer-grained checks; for now we check ownership.
-        if (document.CreatedBy != command.UserId)
+        if (document.CreatedBy != command.UpdatedBy)
             return Result.Unauthorized();
 
         try
@@ -40,14 +40,14 @@ public sealed class UpdateDocumentCommandHandler : IRequestHandler<UpdateDocumen
             if (!string.IsNullOrWhiteSpace(command.Title))
             {
                 var newTitle = Title.Create(command.Title);
-                document.UpdateTitle(newTitle, command.UserId);
+                document.UpdateTitle(newTitle, command.UpdatedBy);
             }
 
             // Apply content update (also snapshots a version internally)
             if (!string.IsNullOrWhiteSpace(command.Content))
             {
                 var newContent = DocumentContent.Create(command.Content);
-                document.UpdateContent(newContent, command.UserId);
+                document.UpdateContent(newContent, command.UpdatedBy);
             }
 
             // Apply status transition
@@ -56,10 +56,10 @@ public sealed class UpdateDocumentCommandHandler : IRequestHandler<UpdateDocumen
                 switch (command.Status.ToLowerInvariant())
                 {
                     case "published":
-                        document.Publish(command.UserId);
+                        document.Publish(command.UpdatedBy);
                         break;
                     case "archived":
-                        document.Archive(command.UserId);
+                        document.Archive(command.UpdatedBy);
                         break;
                     case "draft":
                         // No explicit "revert to draft" method on the aggregate;

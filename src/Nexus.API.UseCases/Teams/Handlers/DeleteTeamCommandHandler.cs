@@ -59,7 +59,7 @@ public sealed class DeleteTeamCommandHandler : IRequestHandler<DeleteTeamCommand
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting team {TeamId}", teamId);
+            _logger.LogError(ex, "Error deleting team {TeamId}", request.TeamId);
             return Result.Error(ex.Message);
         }
     }

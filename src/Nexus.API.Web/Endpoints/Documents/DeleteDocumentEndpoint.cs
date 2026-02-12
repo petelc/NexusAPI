@@ -2,6 +2,7 @@ using MediatR;
 using FastEndpoints;
 using System.Security.Claims;
 using Nexus.API.UseCases.Documents.Commands;
+using Nexus.API.UseCases.Documents.Commands.DeleteDocument;
 
 namespace Nexus.API.Web.Endpoints.Documents;
 
@@ -54,7 +55,12 @@ public class DeleteDocumentEndpoint : EndpointWithoutRequest
 
         try
         {
-            var command = new DeleteDocumentCommand(documentId, userId, permanent);
+            var command = new DeleteDocumentCommand
+            {
+                DocumentId = documentId,
+                DeletedBy = userId,
+                Permanent = permanent
+            };
             var result = await _mediator.Send(command, ct);
 
             if (result.IsSuccess)

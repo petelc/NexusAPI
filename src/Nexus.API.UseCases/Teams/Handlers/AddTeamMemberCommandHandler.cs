@@ -29,7 +29,7 @@ public sealed class AddTeamMemberCommandHandler : IRequestHandler<AddTeamMemberC
         _logger = logger;
     }
 
-    public async Task<Result<AddTeamMemberResult>> Handle(AddTeamMemberCommand request, CancellationToken cancellationToken)
+    public async Task<Result<TeamMemberDto>> Handle(AddTeamMemberCommand request, CancellationToken cancellationToken)
     {
         try
         {
@@ -64,12 +64,13 @@ public sealed class AddTeamMemberCommandHandler : IRequestHandler<AddTeamMemberC
 
             _logger.LogInformation("User {UserId} added to team {TeamId} with role {Role}", request.UserId, team.Id.Value, role);
 
-            var result = new AddTeamMemberResult(
-                MemberId: addedMember.Id,
-                UserId: addedMember.UserId,
-                Role: addedMember.Role.ToString(),
-                InvitedBy: userId,
-                JoinedAt: addedMember.JoinedAt);
+            var result = new TeamMemberDto
+            {
+                UserId = addedMember.UserId,
+                Role = addedMember.Role.ToString(),
+                JoinedAt = addedMember.JoinedAt,
+                IsActive = addedMember.IsActive
+            };
 
             return Result.Success(result);
         }

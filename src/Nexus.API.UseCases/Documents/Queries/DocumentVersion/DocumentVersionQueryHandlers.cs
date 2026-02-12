@@ -1,4 +1,5 @@
 using Ardalis.Result;
+using MediatR;
 using Nexus.API.Core.Interfaces;
 using Nexus.API.Core.ValueObjects;
 using Nexus.API.UseCases.Documents.DTOs;
@@ -15,11 +16,11 @@ namespace Nexus.API.UseCases.Documents.Queries;
 
 public record ListDocumentVersionsQuery(
     Guid DocumentId,
-    Guid UserId);
+    Guid UserId) : IRequest<Result<IReadOnlyList<DocumentVersionSummaryDto>>>;
 
 // --- Handler ---
 
-public class ListDocumentVersionsQueryHandler
+public class ListDocumentVersionsQueryHandler : IRequestHandler<ListDocumentVersionsQuery, Result<IReadOnlyList<DocumentVersionSummaryDto>>>
 {
     private readonly IDocumentRepository _documentRepository;
 
@@ -66,11 +67,11 @@ public class ListDocumentVersionsQueryHandler
 public record GetDocumentVersionQuery(
     Guid DocumentId,
     int VersionNumber,
-    Guid UserId);
+    Guid UserId) : IRequest<Result<DocumentVersionDetailDto>>;
 
 // --- Handler ---
 
-public class GetDocumentVersionQueryHandler
+public class GetDocumentVersionQueryHandler : IRequestHandler<GetDocumentVersionQuery, Result<DocumentVersionDetailDto>>
 {
     private readonly IDocumentRepository _documentRepository;
 
@@ -122,11 +123,11 @@ public class GetDocumentVersionQueryHandler
 public record RestoreDocumentVersionCommand(
     Guid DocumentId,
     int VersionNumber,
-    Guid UserId);
+    Guid UserId) : IRequest<Result<UpdateDocumentResponse>>;
 
 // --- Handler ---
 
-public class RestoreDocumentVersionCommandHandler
+public class RestoreDocumentVersionCommandHandler : IRequestHandler<RestoreDocumentVersionCommand, Result<UpdateDocumentResponse>>
 {
     private readonly IDocumentRepository _documentRepository;
 

@@ -1,8 +1,8 @@
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Nexus.API.Core.Aggregates.DocumentAggregate;
-using Nexus.API.Core.Aggregates.UserAggregate;
 using Nexus.API.Core.Aggregates.DiagramAggregate;
+using Nexus.API.Core.Aggregates.UserAggregate;
 using Nexus.API.Core.Entities;
 using Nexus.API.Infrastructure.Data.Config;
 using Traxs.SharedKernel;
@@ -74,8 +74,6 @@ public class AppDbContext : DbContext
         modelBuilder.ApplyConfiguration(new SessionChangeConfiguration());
 
         modelBuilder.ApplyConfiguration(new ResourcePermissionConfiguration());
-
-
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

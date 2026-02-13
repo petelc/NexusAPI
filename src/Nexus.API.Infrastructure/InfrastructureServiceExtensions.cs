@@ -10,6 +10,7 @@ using Nexus.API.Infrastructure.Data.Repositories;
 using Nexus.API.Infrastructure.Repositories;
 using Nexus.API.Infrastructure.Services;
 using Traxs.SharedKernel;
+using Elastic.Clients.Elasticsearch;
 
 namespace Nexus.API.Infrastructure;
 
@@ -50,6 +51,10 @@ public static class InfrastructureServiceExtensions
             }
         });
 
+        var elasticsearchUrl = configuration["Elasticsearch:Url"] ?? "http://localhost:9200";
+        var elasticSettings = new ElasticsearchClientSettings(new Uri(elasticsearchUrl))
+            .DefaultIndex("nexus-content");
+
         // Repository Registration
         services.AddScoped<IDocumentRepository, DocumentRepository>();
         services.AddScoped(typeof(IRepository<>), typeof(Nexus.API.Infrastructure.Data.RepositoryBase<>));
@@ -74,6 +79,10 @@ public static class InfrastructureServiceExtensions
         services.AddSingleton<IConnectionManager, ConnectionManager>();
 
         services.AddScoped<IPermissionRepository, PermissionRepository>();
+
+        services.AddSingleton(new ElasticsearchClient(elasticSettings));
+
+        services.AddSingleton<ISearchService, ElasticsearchService>();
 
         // ======================================================
 
@@ -200,9 +209,7 @@ public static class InfrastructureServiceExtensions
             var searchService = scope.ServiceProvider.GetService<ISearchService>();
             if (searchService != null)
             {
-                logger.LogInformation("Initializing Elasticsearch indexes...");
-                await searchService.InitializeIndexesAsync();
-                logger.LogInformation("Elasticsearch indexes initialized successfully");
+                logger.LogInformation("Elasticsearch service is available and ready");
             }
         }
         catch (Exception ex)

@@ -10,7 +10,7 @@ using Nexus.API.UseCases.Permissions.Queries;
 using Nexus.API.UseCases.Documents.Commands.UpdateDocument;
 using Nexus.API.UseCases.Documents.Commands;
 using Nexus.API.UseCases.Documents.Queries;
-
+using Nexus.API.UseCases.Search.Queries;
 namespace Nexus.API.UseCases;
 
 /// <summary>
@@ -27,6 +27,8 @@ public static class UseCasesServiceExtensions
 
     // Register AutoMapper
     services.AddAutoMapper(typeof(UseCasesServiceExtensions).Assembly);
+
+    services.AddScoped<GlobalSearchQueryHandler>();
 
     return services;
   }

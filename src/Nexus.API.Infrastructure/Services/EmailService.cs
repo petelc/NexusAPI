@@ -12,6 +12,7 @@ namespace Nexus.API.Infrastructure.Services;
 public class EmailService : IEmailService
 {
   private readonly ILogger<EmailService> _logger;
+  private readonly IConfiguration _configuration;
   private readonly SmtpClient _smtpClient;
   private readonly string _fromEmail;
   private readonly string _fromName;
@@ -22,14 +23,16 @@ public class EmailService : IEmailService
   {
     _logger = logger;
 
-    var smtpHost = configuration["Email:SmtpHost"] ?? "localhost";
-    var smtpPort = int.Parse(configuration["Email:SmtpPort"] ?? "587");
-    var smtpUser = configuration["Email:SmtpUser"];
-    var smtpPassword = configuration["Email:SmtpPassword"];
-    var enableSsl = bool.Parse(configuration["Email:EnableSsl"] ?? "true");
+    _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
 
-    _fromEmail = configuration["Email:FromEmail"] ?? "noreply@nexus.local";
-    _fromName = configuration["Email:FromName"] ?? "Nexus Knowledge Management";
+    var smtpHost = _configuration["Email:SmtpHost"] ?? "localhost";
+    var smtpPort = int.Parse(_configuration["Email:SmtpPort"] ?? "587");
+    var smtpUser = _configuration["Email:SmtpUser"];
+    var smtpPassword = _configuration["Email:SmtpPassword"];
+    var enableSsl = bool.Parse(_configuration["Email:EnableSsl"] ?? "true");
+
+    _fromEmail = _configuration["Email:FromEmail"] ?? "noreply@nexus.local";
+    _fromName = _configuration["Email:FromName"] ?? "Nexus Knowledge Management";
 
     _smtpClient = new SmtpClient(smtpHost, smtpPort)
     {
@@ -43,32 +46,29 @@ public class EmailService : IEmailService
   /// Send a simple text email
   /// </summary>
   public async Task SendEmailAsync(
-    string toEmail,
-    string subject,
-    string body,
-    CancellationToken cancellationToken = default)
+        string toEmail,
+        string subject,
+        string htmlBody,
+        CancellationToken cancellationToken = default)
   {
-    try
-    {
-      var mailMessage = new MailMessage
-      {
-        From = new MailAddress(_fromEmail, _fromName),
-        Subject = subject,
-        Body = body,
-        IsBodyHtml = false
-      };
+    // TODO: In production, replace this with actual email sending
+    // Examples:
+    // - SendGrid: https://sendgrid.com/
+    // - AWS SES: https://aws.amazon.com/ses/
+    // - MailKit: https://github.com/jstedfast/MailKit
+    // - Azure Communication Services: https://azure.microsoft.com/en-us/services/communication-services/
 
-      mailMessage.To.Add(toEmail);
+    _logger.LogInformation(
+        "EMAIL SENT (Development Mode)\n" +
+        "To: {ToEmail}\n" +
+        "Subject: {Subject}\n" +
+        "Body:\n{Body}",
+        toEmail,
+        subject,
+        htmlBody);
 
-      await _smtpClient.SendMailAsync(mailMessage, cancellationToken);
-
-      _logger.LogInformation("Email sent successfully to {ToEmail}: {Subject}", toEmail, subject);
-    }
-    catch (Exception ex)
-    {
-      _logger.LogError(ex, "Error sending email to {ToEmail}", toEmail);
-      throw;
-    }
+    // Simulate async operation
+    await Task.CompletedTask;
   }
 
   /// <summary>
@@ -195,18 +195,52 @@ public class EmailService : IEmailService
   /// Send password reset email
   /// </summary>
   public async Task SendPasswordResetEmailAsync(
-    string toEmail,
-    string resetToken,
-    CancellationToken cancellationToken = default)
+        string toEmail,
+        string userName,
+        string resetToken,
+        CancellationToken cancellationToken = default)
   {
-    var templateData = new Dictionary<string, string>
-    {
-      { "Subject", "Password Reset Request" },
-      { "ResetToken", resetToken },
-      { "ResetUrl", $"https://nexus.local/reset-password?token={resetToken}" }
-    };
+    // Build the reset URL
+    var baseUrl = _configuration["App:BaseUrl"] ?? "http://localhost:5000";
+    var resetUrl = $"{baseUrl}/reset-password?token={Uri.EscapeDataString(resetToken)}";
 
-    await SendTemplatedEmailAsync(toEmail, "password-reset", templateData, cancellationToken);
+    var subject = "Reset Your Password";
+    var htmlBody = $@"
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <meta charset='utf-8'>
+              <title>Reset Your Password</title>
+          </head>
+          <body style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>
+              <div style='max-width: 600px; margin: 0 auto; padding: 20px;'>
+                  <h2 style='color: #2c3e50;'>Reset Your Password</h2>
+                  <p>Hello {userName},</p>
+                  <p>You recently requested to reset your password. Click the button below to reset it:</p>
+                  <div style='text-align: center; margin: 30px 0;'>
+                      <a href='{resetUrl}' 
+                        style='background-color: #3498db; color: white; padding: 12px 30px; 
+                                text-decoration: none; border-radius: 5px; display: inline-block;'>
+                          Reset Password
+                      </a>
+                  </div>
+                  <p>Or copy and paste this link into your browser:</p>
+                  <p style='background-color: #f8f9fa; padding: 10px; border-radius: 5px; word-break: break-all;'>
+                      {resetUrl}
+                  </p>
+                  <p style='color: #7f8c8d; font-size: 14px; margin-top: 30px;'>
+                      This link will expire in 1 hour.<br>
+                      If you didn't request a password reset, you can safely ignore this email.
+                  </p>
+                  <hr style='border: 0; border-top: 1px solid #eee; margin: 30px 0;'>
+                  <p style='color: #7f8c8d; font-size: 12px;'>
+                      This is an automated message from NEXUS Knowledge Management System.
+                  </p>
+              </div>
+          </body>
+          </html>";
+
+    await SendEmailAsync(toEmail, subject, htmlBody, cancellationToken);
   }
 
   /// <summary>

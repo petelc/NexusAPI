@@ -24,7 +24,7 @@ public class ReplyToCommentEndpoint : EndpointWithoutRequest
 
     public override void Configure()
     {
-        Post("/api/v1/collaboration/comments/{id}/replies");
+        Post("/collaboration/comments/{id}/replies");
         Roles("Viewer", "Editor", "Admin");
 
         Description(b => b

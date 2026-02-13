@@ -23,7 +23,7 @@ public class EndSessionEndpoint : EndpointWithoutRequest
 
     public override void Configure()
     {
-        Post("/api/v1/collaboration/sessions/{id}/end");
+        Post("/collaboration/sessions/{id}/end");
         Roles("Editor", "Admin");
 
         Description(b => b

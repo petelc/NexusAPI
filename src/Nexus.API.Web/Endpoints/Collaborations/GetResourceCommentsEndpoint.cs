@@ -23,7 +23,7 @@ public class GetResourceCommentsEndpoint : EndpointWithoutRequest
 
     public override void Configure()
     {
-        Get("/api/v1/collaboration/comments");
+        Get("/collaboration/comments");
         Roles("Viewer", "Editor", "Admin");
 
         Description(b => b

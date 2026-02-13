@@ -23,7 +23,7 @@ public class LeaveSessionEndpoint : EndpointWithoutRequest
 
     public override void Configure()
     {
-        Post("/api/v1/collaboration/sessions/{id}/leave");
+        Post("/collaboration/sessions/{id}/leave");
         Roles("Viewer", "Editor", "Admin");
 
         Description(b => b

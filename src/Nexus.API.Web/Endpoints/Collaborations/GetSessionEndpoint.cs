@@ -23,7 +23,7 @@ public class GetSessionEndpoint : EndpointWithoutRequest
 
     public override void Configure()
     {
-        Get("/api/v1/collaboration/sessions/{id}");
+        Get("/collaboration/sessions/{id}");
         Roles("Viewer", "Editor", "Admin");
 
         Description(b => b

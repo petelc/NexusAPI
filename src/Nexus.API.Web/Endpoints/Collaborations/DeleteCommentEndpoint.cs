@@ -23,7 +23,7 @@ public class DeleteCommentEndpoint : EndpointWithoutRequest
 
     public override void Configure()
     {
-        Delete("/api/v1/collaboration/comments/{id}");
+        Delete("/collaboration/comments/{id}");
         Roles("Viewer", "Editor", "Admin");
 
         Description(b => b

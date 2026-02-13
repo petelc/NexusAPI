@@ -21,7 +21,6 @@ public class ElasticsearchService : ISearchService
     public ElasticsearchService(ElasticsearchClient client)
     {
         _client = client ?? throw new ArgumentNullException(nameof(client));
-        EnsureIndexExistsAsync().GetAwaiter().GetResult();
     }
 
     private async Task EnsureIndexExistsAsync()

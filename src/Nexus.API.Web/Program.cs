@@ -16,6 +16,7 @@ using Nexus.API.Web.Extensions;
 using Nexus.API.Web.Hubs;
 using Nexus.API.Web.Configuration;
 using Nexus.API.Web.Middleware;
+using Nexus.API.Infrastructure.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -164,9 +165,20 @@ var app = builder.Build();
 // Global exception handler — must be FIRST in the pipeline
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
+// Configure middleware pipeline
+app.ConfigureMiddleware();
+
 // Rate limiter — after exception handler, before auth
 app.UseRateLimiter();
-app.UseNexusEndpoints();
+
+app.UseFastEndpoints(config =>
+{
+  config.Endpoints.RoutePrefix = "api/v1";  // ✅ Global prefix for ALL endpoints
+
+  // Optional: Configure versioning
+  config.Versioning.Prefix = "v";  // Results in /api/v1, /api/v2, etc.
+  config.Versioning.PrependToRoute = false;  // Don't add version to individual routes
+});
 
 // Seed database
 using (var scope = app.Services.CreateScope())
@@ -174,8 +186,8 @@ using (var scope = app.Services.CreateScope())
   await SeedData.InitializeAsync(scope.ServiceProvider);
 }
 
-// Configure middleware pipeline
-app.ConfigureMiddleware();
+
+app.UseMiddleware<AuditMiddleware>();
 
 
 app.MapHub<CollaborationHub>("/hubs/collaboration");

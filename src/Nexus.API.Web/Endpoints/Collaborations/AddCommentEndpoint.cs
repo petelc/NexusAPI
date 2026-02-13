@@ -24,7 +24,7 @@ public class AddCommentEndpoint : EndpointWithoutRequest
 
     public override void Configure()
     {
-        Post("/api/v1/collaboration/comments");
+        Post("/collaboration/comments");
         Roles("Viewer", "Editor", "Admin");
 
         Description(b => b

@@ -11,6 +11,8 @@ using Nexus.API.Core.Aggregates.WorkspaceAggregate;
 using Nexus.API.Core.Aggregates.TeamAggregate;
 using Nexus.API.Core.Aggregates.CollaborationAggregate;
 using Nexus.API.Core.Aggregates.ResourcePermissions;
+using Nexus.API.Core.Aggregates.AuditAggregate;
+
 
 
 namespace Nexus.API.Infrastructure.Data;
@@ -46,7 +48,10 @@ public class AppDbContext : DbContext
     public DbSet<ResourcePermission> ResourcePermissions => Set<ResourcePermission>();
 
     // Add RefreshToken DbSet
-    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    //public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<SecurityLog> SecurityLogs => Set<SecurityLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -66,7 +71,7 @@ public class AppDbContext : DbContext
         modelBuilder.ApplyConfiguration(new WorkspaceConfiguration());
 
         // Add RefreshToken configuration
-        modelBuilder.ApplyConfiguration(new RefreshTokenConfiguration());
+        //modelBuilder.ApplyConfiguration(new RefreshTokenConfiguration());
         modelBuilder.ApplyConfiguration(new TeamConfiguration());
         modelBuilder.ApplyConfiguration(new CollaborationSessionConfiguration());
         modelBuilder.ApplyConfiguration(new SessionParticipantConfiguration());
@@ -74,6 +79,9 @@ public class AppDbContext : DbContext
         modelBuilder.ApplyConfiguration(new SessionChangeConfiguration());
 
         modelBuilder.ApplyConfiguration(new ResourcePermissionConfiguration());
+
+        modelBuilder.ApplyConfiguration(new AuditLogConfiguration());
+        modelBuilder.ApplyConfiguration(new SecurityLogConfiguration());
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

@@ -32,7 +32,7 @@ public class CreateSnippetEndpoint : EndpointWithoutRequest
 
   public override void Configure()
   {
-    Post("/api/v1/snippets");
+    Post("/snippets");
     Roles("Editor", "Admin");
 
     Description(b => b

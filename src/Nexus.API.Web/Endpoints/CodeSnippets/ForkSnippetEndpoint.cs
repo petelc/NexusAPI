@@ -28,7 +28,7 @@ public class ForkSnippetEndpoint : EndpointWithoutRequest
 
   public override void Configure()
   {
-    Post("/api/v1/snippets/{id}/fork");
+    Post("/snippets/{id}/fork");
     Roles("Viewer", "Editor", "Admin");
 
     Description(b => b

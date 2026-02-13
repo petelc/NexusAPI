@@ -24,7 +24,7 @@ public class UpdateCommentEndpoint : EndpointWithoutRequest
 
     public override void Configure()
     {
-        Put("/api/v1/collaboration/comments/{id}");
+        Put("/collaboration/comments/{id}");
         Roles("Viewer", "Editor", "Admin");
 
         Description(b => b

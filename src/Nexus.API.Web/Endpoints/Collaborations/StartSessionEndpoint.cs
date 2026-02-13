@@ -22,7 +22,7 @@ public class StartSessionEndpoint : EndpointWithoutRequest
 
     public override void Configure()
     {
-        Post("/api/v1/collaboration/sessions");
+        Post("/collaboration/sessions");
         Roles("Editor", "Admin");
 
         Description(b => b

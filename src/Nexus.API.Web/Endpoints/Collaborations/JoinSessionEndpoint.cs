@@ -23,7 +23,7 @@ public class JoinSessionEndpoint : EndpointWithoutRequest
 
     public override void Configure()
     {
-        Post("/api/v1/collaboration/sessions/{id}/join");
+        Post("/collaboration/sessions/{id}/join");
         Roles("Viewer", "Editor", "Admin");
 
         Description(b => b

@@ -60,6 +60,7 @@ public static class InfrastructureServiceExtensions
         services.AddScoped(typeof(IRepository<>), typeof(Nexus.API.Infrastructure.Data.RepositoryBase<>));
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
+        services.AddScoped<IUserService, UserService>();
         services.AddHttpContextAccessor(); // Required for CurrentUserService
 
         // Add Tag repository
@@ -83,6 +84,8 @@ public static class InfrastructureServiceExtensions
         services.AddSingleton(new ElasticsearchClient(elasticSettings));
 
         services.AddSingleton<ISearchService, ElasticsearchService>();
+
+        services.AddScoped<IAuditService, AuditService>();
 
         // ======================================================
 

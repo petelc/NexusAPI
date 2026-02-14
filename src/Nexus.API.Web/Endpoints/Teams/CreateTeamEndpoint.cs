@@ -22,7 +22,7 @@ public class CreateTeamEndpoint : EndpointWithoutRequest
 
     public override void Configure()
     {
-        Post("/api/v1/teams");
+        Post("/teams");
         Roles("Editor", "Admin");
 
         Description(b => b

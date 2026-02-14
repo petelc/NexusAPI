@@ -21,7 +21,7 @@ public class GetChildCollectionsEndpoint : EndpointWithoutRequest
 
   public override void Configure()
   {
-    Get("/api/v1/collections/{parentId}/children");
+    Get("/collections/{parentId}/children");
     Roles("Viewer", "Editor", "Admin");
 
     Description(b => b

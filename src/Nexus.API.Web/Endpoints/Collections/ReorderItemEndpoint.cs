@@ -22,7 +22,7 @@ public class ReorderItemEndpoint : EndpointWithoutRequest
 
   public override void Configure()
   {
-    Put("/api/v1/collections/{collectionId}/items/{itemReferenceId}/order");
+    Put("/collections/{collectionId}/items/{itemReferenceId}/order");
     Roles("Editor", "Admin");
 
     Description(b => b

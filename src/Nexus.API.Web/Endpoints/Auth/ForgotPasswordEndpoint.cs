@@ -23,7 +23,7 @@ public class ForgotPasswordEndpoint : Endpoint<ForgotPasswordRequest, ForgotPass
 
     public override void Configure()
     {
-        Post("/api/v1/auth/forgot-password");
+        Post("/auth/forgot-password");
         AllowAnonymous();
         Options(x => x
             .WithTags("Authentication")

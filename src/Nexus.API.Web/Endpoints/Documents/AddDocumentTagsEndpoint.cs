@@ -23,7 +23,7 @@ public class AddDocumentTagsEndpoint : EndpointWithoutRequest
 
     public override void Configure()
     {
-        Post("/api/v1/documents/{id}/tags");
+        Post("/documents/{id}/tags");
         Roles("Editor", "Admin");
 
         Description(b => b

@@ -21,7 +21,7 @@ public class SearchTeamsEndpoint : EndpointWithoutRequest
 
     public override void Configure()
     {
-        Get("/api/v1/teams/search");
+        Get("/teams/search");
         Roles("Viewer", "Editor", "Admin");
 
         Description(b => b

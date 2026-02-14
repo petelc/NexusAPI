@@ -22,7 +22,7 @@ public class RemoveItemFromCollectionEndpoint : EndpointWithoutRequest
 
   public override void Configure()
   {
-    Delete("/api/v1/collections/{collectionId}/items/{itemReferenceId}");
+    Delete("/collections/{collectionId}/items/{itemReferenceId}");
     Roles("Editor", "Admin");
 
     Description(b => b

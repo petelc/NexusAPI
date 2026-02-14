@@ -20,7 +20,7 @@ public class ChangeMemberRoleEndpoint : EndpointWithoutRequest
 
   public override void Configure()
   {
-    Put("/api/v1/workspaces/{id}/members/{userId}/role");
+    Put("/workspaces/{id}/members/{userId}/role");
     Roles("Editor", "Admin");
     Description(b => b
       .WithTags("Workspaces")

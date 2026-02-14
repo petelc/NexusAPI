@@ -22,7 +22,7 @@ public class ResetPasswordEndpoint : Endpoint<ResetPasswordRequest, ResetPasswor
 
     public override void Configure()
     {
-        Post("/api/v1/auth/reset-password");
+        Post("/auth/reset-password");
         AllowAnonymous();
         Options(x => x
             .WithTags("Authentication")

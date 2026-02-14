@@ -22,7 +22,7 @@ public class RestoreDocumentVersionEndpoint : EndpointWithoutRequest
 
     public override void Configure()
     {
-        Post("/api/v1/documents/{id}/versions/{versionNumber}/restore");
+        Post("/documents/{id}/versions/{versionNumber}/restore");
         Roles("Editor", "Admin");
 
         Description(b => b

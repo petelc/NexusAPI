@@ -21,7 +21,7 @@ public class GetDocumentVersionEndpoint : EndpointWithoutRequest
 
     public override void Configure()
     {
-        Get("/api/v1/documents/{id}/versions/{versionNumber}");
+        Get("/documents/{id}/versions/{versionNumber}");
         Roles("Viewer", "Editor", "Admin");
 
         Description(b => b

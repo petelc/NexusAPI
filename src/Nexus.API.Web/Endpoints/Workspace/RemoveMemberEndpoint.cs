@@ -20,7 +20,7 @@ public class RemoveMemberEndpoint : EndpointWithoutRequest
 
   public override void Configure()
   {
-    Delete("/api/v1/workspaces/{id}/members/{userId}");
+    Delete("/workspaces/{id}/members/{userId}");
     Roles("Editor", "Admin");
     Description(b => b
       .WithTags("Workspaces")

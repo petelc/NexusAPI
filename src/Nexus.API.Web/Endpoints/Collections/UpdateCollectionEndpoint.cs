@@ -7,7 +7,7 @@ using Nexus.API.UseCases.Collections.Handlers;
 namespace Nexus.API.Web.Endpoints.Collections;
 
 /// <summary>
-/// Endpoint: PUT /api/v1/collections/{id}
+/// Endpoint: PUT /collections/{id}
 /// Updates collection properties
 /// Requires: Editor, Admin roles
 /// </summary>
@@ -22,7 +22,7 @@ public class UpdateCollectionEndpoint : EndpointWithoutRequest
 
   public override void Configure()
   {
-    Put("/api/v1/collections/{id}");
+    Put("/collections/{id}");
     Roles("Editor", "Admin");
 
     Description(b => b

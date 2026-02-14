@@ -21,7 +21,7 @@ public class GetRootCollectionsEndpoint : EndpointWithoutRequest
 
   public override void Configure()
   {
-    Get("/api/v1/workspaces/{workspaceId}/collections/roots");
+    Get("/workspaces/{workspaceId}/collections/roots");
     Roles("Viewer", "Editor", "Admin");
 
     Description(b => b

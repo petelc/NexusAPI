@@ -20,7 +20,7 @@ public class DeleteWorkspaceEndpoint : EndpointWithoutRequest
 
   public override void Configure()
   {
-    Delete("/api/v1/workspaces/{id}");
+    Delete("/workspaces/{id}");
     Roles("Admin");
     Description(b => b
       .WithTags("Workspaces")

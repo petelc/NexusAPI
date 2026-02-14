@@ -22,7 +22,7 @@ public class RemoveDocumentTagEndpoint : EndpointWithoutRequest
 
     public override void Configure()
     {
-        Delete("/api/v1/documents/{id}/tags/{tagName}");
+        Delete("/documents/{id}/tags/{tagName}");
         Roles("Editor", "Admin");
 
         Description(b => b

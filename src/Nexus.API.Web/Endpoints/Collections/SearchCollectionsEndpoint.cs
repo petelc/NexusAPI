@@ -21,7 +21,7 @@ public class SearchCollectionsEndpoint : EndpointWithoutRequest
 
   public override void Configure()
   {
-    Get("/api/v1/workspaces/{workspaceId}/collections/search");
+    Get("/workspaces/{workspaceId}/collections/search");
     Roles("Viewer", "Editor", "Admin");
 
     Description(b => b

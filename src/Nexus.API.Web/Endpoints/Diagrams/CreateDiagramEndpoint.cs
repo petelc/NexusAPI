@@ -30,7 +30,7 @@ public class CreateDiagramEndpoint : EndpointWithoutRequest
 
   public override void Configure()
   {
-    Post("/api/v1/diagrams");
+    Post("/diagrams");
     Roles("Editor", "Admin");
 
     Description(b => b

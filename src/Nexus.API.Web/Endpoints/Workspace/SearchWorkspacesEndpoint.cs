@@ -20,7 +20,7 @@ public class SearchWorkspacesEndpoint : EndpointWithoutRequest
 
   public override void Configure()
   {
-    Get("/api/v1/workspaces/search");
+    Get("/workspaces/search");
     Roles("Viewer", "Editor", "Admin");
     Description(b => b
       .WithTags("Workspaces")

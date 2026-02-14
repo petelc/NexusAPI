@@ -23,7 +23,7 @@ public class DeleteDocumentEndpoint : EndpointWithoutRequest
 
     public override void Configure()
     {
-        Delete("/api/v1/documents/{id}");
+        Delete("/documents/{id}");
         Roles("Editor", "Admin");
 
         Description(b => b

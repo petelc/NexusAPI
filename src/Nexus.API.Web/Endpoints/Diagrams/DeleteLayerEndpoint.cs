@@ -21,7 +21,7 @@ public class DeleteLayerEndpoint : EndpointWithoutRequest
 
   public override void Configure()
   {
-    Delete("/api/v1/diagrams/{diagramId}/layers/{layerId}");
+    Delete("/diagrams/{diagramId}/layers/{layerId}");
     Roles("Editor", "Admin");
 
     Description(b => b

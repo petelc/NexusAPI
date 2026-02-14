@@ -19,7 +19,7 @@ public class AddMemberEndpoint : EndpointWithoutRequest
 
   public override void Configure()
   {
-    Post("/api/v1/workspaces/{id}/members");
+    Post("/workspaces/{id}/members");
     Roles("Editor", "Admin");
     Description(b => b
       .WithTags("Workspaces")

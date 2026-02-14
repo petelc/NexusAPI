@@ -20,7 +20,7 @@ public class CreateWorkspaceEndpoint : EndpointWithoutRequest
 
   public override void Configure()
   {
-    Post("/api/v1/workspaces");
+    Post("/workspaces");
     Roles("Editor", "Admin");
     Description(b => b
       .WithTags("Workspaces")

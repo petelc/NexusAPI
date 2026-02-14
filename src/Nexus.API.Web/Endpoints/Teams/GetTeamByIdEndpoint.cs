@@ -21,7 +21,7 @@ public class GetTeamByIdEndpoint : EndpointWithoutRequest
 
     public override void Configure()
     {
-        Get("/api/v1/teams/{id}");
+        Get("/teams/{id}");
         Roles("Viewer", "Editor", "Admin");
 
         Description(b => b

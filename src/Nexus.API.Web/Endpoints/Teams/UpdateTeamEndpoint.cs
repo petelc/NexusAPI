@@ -22,7 +22,7 @@ public class UpdateTeamEndpoint : EndpointWithoutRequest
 
     public override void Configure()
     {
-        Put("/api/v1/teams/{id}");
+        Put("/teams/{id}");
         Roles("Editor", "Admin");
 
         Description(b => b

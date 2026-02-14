@@ -29,7 +29,7 @@ public class UpdateDiagramEndpoint : EndpointWithoutRequest
 
   public override void Configure()
   {
-    Put("/api/v1/diagrams/{diagramId}");
+    Put("/diagrams/{diagramId}");
     Roles("Editor", "Admin");
 
     Description(b => b

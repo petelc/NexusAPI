@@ -21,7 +21,7 @@ public class RevokePermissionEndpoint : EndpointWithoutRequest
 
     public override void Configure()
     {
-        Delete("/api/v1/permissions/{id}");
+        Delete("/permissions/{id}");
         Roles("Editor", "Admin");
 
         Description(b => b

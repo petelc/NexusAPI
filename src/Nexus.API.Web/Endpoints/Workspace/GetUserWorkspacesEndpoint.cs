@@ -20,7 +20,7 @@ public class GetUserWorkspacesEndpoint : EndpointWithoutRequest
 
   public override void Configure()
   {
-    Get("/api/v1/workspaces/my");
+    Get("/workspaces/my");
     Roles("Viewer", "Editor", "Admin");
     Description(b => b
       .WithTags("Workspaces")

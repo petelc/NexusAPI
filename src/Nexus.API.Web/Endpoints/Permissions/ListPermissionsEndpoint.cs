@@ -21,7 +21,7 @@ public class ListPermissionsEndpoint : EndpointWithoutRequest
 
     public override void Configure()
     {
-        Get("/api/v1/permissions");
+        Get("/permissions");
         Roles("Viewer", "Editor", "Admin");
 
         Description(b => b

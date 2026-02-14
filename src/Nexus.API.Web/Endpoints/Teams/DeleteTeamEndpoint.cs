@@ -21,7 +21,7 @@ public class DeleteTeamEndpoint : EndpointWithoutRequest
 
     public override void Configure()
     {
-        Delete("/api/v1/teams/{id}");
+        Delete("/teams/{id}");
         Roles("Admin");
 
         Description(b => b

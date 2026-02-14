@@ -20,7 +20,7 @@ public class GetTeamWorkspacesEndpoint : EndpointWithoutRequest
 
   public override void Configure()
   {
-    Get("/api/v1/teams/{teamId}/workspaces");
+    Get("/teams/{teamId}/workspaces");
     Roles("Viewer", "Editor", "Admin");
     Description(b => b
       .WithTags("Workspaces")

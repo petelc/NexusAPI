@@ -28,7 +28,7 @@ public class GlobalSearchEndpoint : Endpoint<SearchRequest, GlobalSearchResponse
 
     public override void Configure()
     {
-        Get("/api/v1/search");
+        Get("/search");
         AllowAnonymous(); // Change to RequireAuth if needed
         Options(x => x
             .WithTags("Search")

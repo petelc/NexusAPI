@@ -22,7 +22,7 @@ public class AddItemToCollectionEndpoint : EndpointWithoutRequest
 
   public override void Configure()
   {
-    Post("/api/v1/collections/{collectionId}/items");
+    Post("/collections/{collectionId}/items");
     Roles("Editor", "Admin");
 
     Description(b => b

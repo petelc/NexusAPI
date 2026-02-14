@@ -22,7 +22,7 @@ public class RemoveTeamMemberEndpoint : EndpointWithoutRequest
 
     public override void Configure()
     {
-        Delete("/api/v1/teams/{id}/members/{userId}");
+        Delete("/teams/{id}/members/{userId}");
         Roles("Viewer", "Editor", "Admin");
 
         Description(b => b

@@ -21,7 +21,7 @@ public class GetUserTeamsEndpoint : EndpointWithoutRequest
 
     public override void Configure()
     {
-        Get("/api/v1/teams/my");
+        Get("/teams/my");
         Roles("Viewer", "Editor", "Admin");
 
         Description(b => b

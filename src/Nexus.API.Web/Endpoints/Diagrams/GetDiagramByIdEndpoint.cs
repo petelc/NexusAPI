@@ -28,7 +28,7 @@ public class GetDiagramByIdEndpoint : EndpointWithoutRequest
 
   public override void Configure()
   {
-    Get("/api/v1/diagrams/{diagramId}");
+    Get("/diagrams/{diagramId}");
     Roles("Viewer", "Editor", "Admin");
 
     Description(b => b

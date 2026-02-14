@@ -23,7 +23,7 @@ public class ChangeTeamMemberRoleEndpoint : EndpointWithoutRequest
 
     public override void Configure()
     {
-        Put("/api/v1/teams/{id}/members/{userId}/role");
+        Put("/teams/{id}/members/{userId}/role");
         Roles("Editor", "Admin");
 
         Description(b => b

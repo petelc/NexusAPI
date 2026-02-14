@@ -20,7 +20,7 @@ public class GetWorkspaceByIdEndpoint : EndpointWithoutRequest
 
   public override void Configure()
   {
-    Get("/api/v1/workspaces/{id}");
+    Get("/workspaces/{id}");
     Roles("Viewer", "Editor", "Admin");
     Description(b => b
       .WithTags("Workspaces")

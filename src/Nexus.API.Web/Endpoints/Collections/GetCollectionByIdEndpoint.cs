@@ -22,7 +22,7 @@ public class GetCollectionByIdEndpoint : EndpointWithoutRequest
 
   public override void Configure()
   {
-    Get("/api/v1/collections/{id}");
+    Get("/collections/{id}");
     Roles("Viewer", "Editor", "Admin");
 
     Description(b => b

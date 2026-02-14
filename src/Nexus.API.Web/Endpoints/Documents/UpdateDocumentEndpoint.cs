@@ -25,7 +25,7 @@ public class UpdateDocumentEndpoint : Endpoint<UpdateDocumentRequest>
 
     public override void Configure()
     {
-        Put("/api/v1/documents/{id}");
+        Put("/documents/{id}");
         Roles("Editor", "Admin");
 
         Description(b => b

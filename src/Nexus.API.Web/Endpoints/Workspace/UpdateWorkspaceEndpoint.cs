@@ -20,7 +20,7 @@ public class UpdateWorkspaceEndpoint : EndpointWithoutRequest
 
   public override void Configure()
   {
-    Put("/api/v1/workspaces/{id}");
+    Put("/workspaces/{id}");
     Roles("Editor", "Admin");
     Description(b => b
       .WithTags("Workspaces")

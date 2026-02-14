@@ -28,7 +28,7 @@ public class UpdateConnectionEndpoint : EndpointWithoutRequest
 
   public override void Configure()
   {
-    Put("/api/v1/diagrams/{diagramId}/connections/{connectionId}");
+    Put("/diagrams/{diagramId}/connections/{connectionId}");
     Roles("Editor", "Admin");
 
     Description(b => b
@@ -83,7 +83,7 @@ public class UpdateConnectionEndpoint : EndpointWithoutRequest
 
       var connectionIdVO = ConnectionId.Create(connectionId);
       var connection = diagram.Connections.FirstOrDefault(c => c.Id == connectionIdVO);
-      
+
       if (connection == null)
       {
         HttpContext.Response.StatusCode = 404;

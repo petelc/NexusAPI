@@ -29,7 +29,7 @@ public class AddLayerEndpoint : EndpointWithoutRequest
 
   public override void Configure()
   {
-    Post("/api/v1/diagrams/{diagramId}/layers");
+    Post("/diagrams/{diagramId}/layers");
     Roles("Editor", "Admin");
 
     Description(b => b

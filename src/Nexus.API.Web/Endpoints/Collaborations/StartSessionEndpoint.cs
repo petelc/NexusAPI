@@ -1,3 +1,4 @@
+using MediatR;
 using FastEndpoints;
 using System.Security.Claims;
 using Nexus.API.UseCases.Collaboration.Commands;
@@ -12,16 +13,16 @@ namespace Nexus.API.Web.Endpoints.Collaboration;
 /// </summary>
 public class StartSessionEndpoint : EndpointWithoutRequest
 {
-    private readonly StartSessionCommandHandler _handler;
+    private readonly IMediator _mediator;
 
-    public StartSessionEndpoint(StartSessionCommandHandler handler)
+    public StartSessionEndpoint(IMediator mediator)
     {
-        _handler = handler;
+        _mediator = mediator;
     }
 
     public override void Configure()
     {
-        Post("/api/v1/collaboration/sessions");
+        Post("/collaboration/sessions");
         Roles("Editor", "Admin");
 
         Description(b => b
@@ -50,7 +51,7 @@ public class StartSessionEndpoint : EndpointWithoutRequest
 
         try
         {
-            var result = await _handler.Handle(request, ct);
+            var result = await _mediator.Send(request, ct);
 
             if (result.IsSuccess)
             {

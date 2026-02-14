@@ -1,3 +1,4 @@
+using MediatR;
 using System.Security.Claims;
 using FastEndpoints;
 using Nexus.API.UseCases.Workspaces.Handlers;
@@ -10,16 +11,16 @@ namespace Nexus.API.Web.Endpoints.Workspaces;
 /// </summary>
 public class SearchWorkspacesEndpoint : EndpointWithoutRequest
 {
-  private readonly SearchWorkspacesHandler _handler;
+  private readonly IMediator _mediator;
 
-  public SearchWorkspacesEndpoint(SearchWorkspacesHandler handler)
+  public SearchWorkspacesEndpoint(IMediator mediator)
   {
-    _handler = handler;
+    _mediator = mediator;
   }
 
   public override void Configure()
   {
-    Get("/api/v1/workspaces/search");
+    Get("/workspaces/search");
     Roles("Viewer", "Editor", "Admin");
     Description(b => b
       .WithTags("Workspaces")
@@ -63,7 +64,7 @@ public class SearchWorkspacesEndpoint : EndpointWithoutRequest
       var query = new SearchWorkspacesQuery(searchTerm, teamId);
 
       // Handle
-      var result = await _handler.Handle(query, ct);
+      var result = await _mediator.Send(query, ct);
 
       if (result.IsSuccess)
       {

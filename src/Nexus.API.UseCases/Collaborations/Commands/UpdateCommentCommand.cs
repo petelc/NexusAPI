@@ -1,4 +1,5 @@
 using Nexus.API.Core.ValueObjects;
+using MediatR;
 
 namespace Nexus.API.UseCases.Collaboration.Commands;
 
@@ -8,4 +9,4 @@ namespace Nexus.API.UseCases.Collaboration.Commands;
 public record UpdateCommentCommand(
     CommentId CommentId,
     UserId UserId,
-    string Text);
+    string Text) : IRequest<Result<CommentResponseDto>>;

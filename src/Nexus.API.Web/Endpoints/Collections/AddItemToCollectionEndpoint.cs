@@ -1,3 +1,4 @@
+using MediatR;
 using FastEndpoints;
 using System.Security.Claims;
 using Nexus.API.UseCases.Collections.Commands;
@@ -12,16 +13,16 @@ namespace Nexus.API.Web.Endpoints.Collections;
 /// </summary>
 public class AddItemToCollectionEndpoint : EndpointWithoutRequest
 {
-  private readonly AddItemToCollectionHandler _handler;
+  private readonly IMediator _mediator;
 
-  public AddItemToCollectionEndpoint(AddItemToCollectionHandler handler)
+  public AddItemToCollectionEndpoint(IMediator mediator)
   {
-    _handler = handler;
+    _mediator = mediator;
   }
 
   public override void Configure()
   {
-    Post("/api/v1/collections/{collectionId}/items");
+    Post("/collections/{collectionId}/items");
     Roles("Editor", "Admin");
 
     Description(b => b
@@ -64,7 +65,7 @@ public class AddItemToCollectionEndpoint : EndpointWithoutRequest
 
     try
     {
-      var result = await _handler.Handle(command, ct);
+      var result = await _mediator.Send(command, ct);
 
       if (result.IsSuccess)
       {

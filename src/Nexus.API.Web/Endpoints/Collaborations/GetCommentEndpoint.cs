@@ -1,3 +1,4 @@
+using MediatR;
 using FastEndpoints;
 using System.Security.Claims;
 using Nexus.API.UseCases.Collaboration.Handlers;
@@ -13,16 +14,16 @@ namespace Nexus.API.Web.Endpoints.Collaboration;
 /// </summary>
 public class GetCommentEndpoint : EndpointWithoutRequest
 {
-    private readonly GetCommentByIdQueryHandler _handler;
+    private readonly IMediator _mediator;
 
-    public GetCommentEndpoint(GetCommentByIdQueryHandler handler)
+    public GetCommentEndpoint(IMediator mediator)
     {
-        _handler = handler;
+        _mediator = mediator;
     }
 
     public override void Configure()
     {
-        Get("/api/v1/collaboration/comments/{id}");
+        Get("/collaboration/comments/{id}");
         Roles("Viewer", "Editor, Admin");
 
         Description(b => b
@@ -53,7 +54,7 @@ public class GetCommentEndpoint : EndpointWithoutRequest
 
         try
         {
-            var result = await _handler.Handle(query, ct);
+            var result = await _mediator.Send(query, ct);
 
             if (result.IsSuccess)
             {

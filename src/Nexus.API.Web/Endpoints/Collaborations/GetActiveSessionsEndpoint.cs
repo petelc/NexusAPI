@@ -1,7 +1,9 @@
+using MediatR;
 using FastEndpoints;
 using System.Security.Claims;
 using Nexus.API.Core.ValueObjects;
 using Nexus.API.UseCases.Collaboration.Handlers;
+using Nexus.API.UseCases.Collaboration.Queries;
 
 namespace Nexus.API.Web.Endpoints.Collaboration;
 
@@ -12,16 +14,16 @@ namespace Nexus.API.Web.Endpoints.Collaboration;
 /// </summary>
 public class GetActiveSessionsEndpoint : EndpointWithoutRequest
 {
-    private readonly GetActiveSessionsQueryHandler _handler;
+    private readonly IMediator _mediator;
 
-    public GetActiveSessionsEndpoint(GetActiveSessionsQueryHandler handler)
+    public GetActiveSessionsEndpoint(IMediator mediator)
     {
-        _handler = handler;
+        _mediator = mediator;
     }
 
     public override void Configure()
     {
-        Get("/api/v1/collaboration/sessions/active");
+        Get("/collaboration/sessions/active");
         Roles("Viewer", "Editor", "Admin");
 
         Description(b => b
@@ -59,7 +61,12 @@ public class GetActiveSessionsEndpoint : EndpointWithoutRequest
 
         try
         {
-            var result = await _handler.Handle(resourceTypeStr, ResourceId.Create(resourceId), ct);
+            var query = new GetActiveSessionsQuery
+            {
+                ResourceType = resourceTypeStr,
+                ResourceId = ResourceId.Create(resourceId)
+            };
+            var result = await _mediator.Send(query, ct);
 
             if (result.IsSuccess)
             {

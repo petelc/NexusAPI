@@ -33,7 +33,7 @@ public class UpdateSnippetEndpoint : EndpointWithoutRequest
 
   public override void Configure()
   {
-    Put("/api/v1/snippets/{id}");
+    Put("/snippets/{id}");
     Roles("Editor", "Admin");
 
     Description(b => b

@@ -1,3 +1,4 @@
+using MediatR;
 using FastEndpoints;
 using System.Security.Claims;
 using Nexus.API.UseCases.Teams.Commands;
@@ -12,16 +13,16 @@ namespace Nexus.API.Web.Endpoints.Teams;
 /// </summary>
 public class AddTeamMemberEndpoint : EndpointWithoutRequest
 {
-    private readonly AddTeamMemberCommandHandler _handler;
+    private readonly IMediator _mediator;
 
-    public AddTeamMemberEndpoint(AddTeamMemberCommandHandler handler)
+    public AddTeamMemberEndpoint(IMediator mediator)
     {
-        _handler = handler;
+        _mediator = mediator;
     }
 
     public override void Configure()
     {
-        Post("/api/v1/teams/{id}/members");
+        Post("/teams/{id}/members");
         Roles("Editor", "Admin");
 
         Description(b => b
@@ -61,7 +62,7 @@ public class AddTeamMemberEndpoint : EndpointWithoutRequest
 
         try
         {
-            var result = await _handler.Handle(command, ct);
+            var result = await _mediator.Send(command, ct);
 
             if (result.IsSuccess)
             {

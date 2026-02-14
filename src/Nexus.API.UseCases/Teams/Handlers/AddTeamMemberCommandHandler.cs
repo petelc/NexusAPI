@@ -1,17 +1,19 @@
 using MediatR;
+using Ardalis.Result;
 using Microsoft.Extensions.Logging;
 using Nexus.API.Core.Aggregates.TeamAggregate;
 using Nexus.API.Core.Enums;
 using Nexus.API.Core.Interfaces;
 using Nexus.API.Core.ValueObjects;
 using Nexus.API.UseCases.Teams.Commands;
+using Nexus.API.UseCases.Teams.DTOs;
 
 namespace Nexus.API.UseCases.Teams.Handlers;
 
 /// <summary>
 /// Handler for adding a member to a team
 /// </summary>
-public sealed class AddTeamMemberCommandHandler
+public sealed class AddTeamMemberCommandHandler : IRequestHandler<AddTeamMemberCommand, Result<TeamMemberDto>>
 {
     private readonly ITeamRepository _teamRepository;
     private readonly ICurrentUserService _currentUserService;
@@ -27,7 +29,7 @@ public sealed class AddTeamMemberCommandHandler
         _logger = logger;
     }
 
-    public async Task<Result<AddTeamMemberResult>> Handle(AddTeamMemberCommand request, CancellationToken cancellationToken)
+    public async Task<Result<TeamMemberDto>> Handle(AddTeamMemberCommand request, CancellationToken cancellationToken)
     {
         try
         {
@@ -62,12 +64,13 @@ public sealed class AddTeamMemberCommandHandler
 
             _logger.LogInformation("User {UserId} added to team {TeamId} with role {Role}", request.UserId, team.Id.Value, role);
 
-            var result = new AddTeamMemberResult(
-                MemberId: addedMember.Id,
-                UserId: addedMember.UserId,
-                Role: addedMember.Role.ToString(),
-                InvitedBy: userId,
-                JoinedAt: addedMember.JoinedAt);
+            var result = new TeamMemberDto
+            {
+                UserId = addedMember.UserId,
+                Role = addedMember.Role.ToString(),
+                JoinedAt = addedMember.JoinedAt,
+                IsActive = addedMember.IsActive
+            };
 
             return Result.Success(result);
         }

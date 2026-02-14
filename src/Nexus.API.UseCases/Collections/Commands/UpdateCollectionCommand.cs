@@ -1,8 +1,10 @@
+using MediatR;
+using Ardalis.Result;
 using Nexus.API.UseCases.Collections.DTOs;
 
 namespace Nexus.API.UseCases.Collections.Commands;
 
-public class UpdateCollectionCommand
+public class UpdateCollectionCommand : IRequest<Result<UpdateCollectionResponse>>
 {
   public Guid CollectionId { get; set; }
   public string? Name { get; set; }

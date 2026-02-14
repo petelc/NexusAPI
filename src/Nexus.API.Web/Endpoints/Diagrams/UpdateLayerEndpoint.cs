@@ -7,7 +7,7 @@ using Nexus.API.UseCases.Diagrams.DTOs;
 namespace Nexus.API.Web.Endpoints.Diagrams;
 
 /// <summary>
-/// Endpoint: PUT /api/v1/diagrams/{diagramId}/layers/{layerId}
+/// Endpoint: PUT /diagrams/{diagramId}/layers/{layerId}
 /// Updates a layer's properties
 /// Requires: Editor, Admin roles
 /// </summary>
@@ -22,7 +22,7 @@ public class UpdateLayerEndpoint : EndpointWithoutRequest
 
   public override void Configure()
   {
-    Put("/api/v1/diagrams/{diagramId}/layers/{layerId}");
+    Put("/diagrams/{diagramId}/layers/{layerId}");
     Roles("Editor", "Admin");
 
     Description(b => b
@@ -77,7 +77,7 @@ public class UpdateLayerEndpoint : EndpointWithoutRequest
 
       var layerIdVO = LayerId.Create(layerId);
       var layer = diagram.Layers.FirstOrDefault(l => l.Id == layerIdVO);
-      
+
       if (layer == null)
       {
         HttpContext.Response.StatusCode = 404;

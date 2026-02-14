@@ -1,8 +1,10 @@
+using MediatR;
+using Ardalis.Result;
 using Nexus.API.UseCases.Collections.DTOs;
 
 namespace Nexus.API.UseCases.Collections.Commands;
 
-public class CreateCollectionCommand
+public class CreateCollectionCommand : IRequest<Result<CreateCollectionResponse>>
 {
   public string Name { get; set; } = string.Empty;
   public string? Description { get; set; }

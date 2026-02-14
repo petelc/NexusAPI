@@ -23,7 +23,7 @@ public class GetCollectionBreadcrumbEndpoint : EndpointWithoutRequest
 
   public override void Configure()
   {
-    Get("/api/v1/collections/{id}/breadcrumb");
+    Get("/collections/{id}/breadcrumb");
     Roles("Viewer", "Editor", "Admin");
 
     Description(b => b

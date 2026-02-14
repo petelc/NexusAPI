@@ -1,3 +1,4 @@
+using MediatR;
 using System.Security.Claims;
 using FastEndpoints;
 using Nexus.API.UseCases.Workspaces.Commands;
@@ -10,16 +11,16 @@ namespace Nexus.API.Web.Endpoints.Workspaces;
 /// </summary>
 public class ChangeMemberRoleEndpoint : EndpointWithoutRequest
 {
-  private readonly ChangeMemberRoleHandler _handler;
+  private readonly IMediator _mediator;
 
-  public ChangeMemberRoleEndpoint(ChangeMemberRoleHandler handler)
+  public ChangeMemberRoleEndpoint(IMediator mediator)
   {
-    _handler = handler;
+    _mediator = mediator;
   }
 
   public override void Configure()
   {
-    Put("/api/v1/workspaces/{id}/members/{userId}/role");
+    Put("/workspaces/{id}/members/{userId}/role");
     Roles("Editor", "Admin");
     Description(b => b
       .WithTags("Workspaces")
@@ -83,7 +84,7 @@ public class ChangeMemberRoleEndpoint : EndpointWithoutRequest
       var command = new ChangeMemberRoleCommand(workspaceId, userId, request.NewRole);
 
       // Handle
-      var result = await _handler.Handle(command, ct);
+      var result = await _mediator.Send(command, ct);
 
       if (result.IsSuccess)
       {

@@ -12,7 +12,7 @@ namespace Nexus.API.UseCases.Teams.Handlers;
 /// <summary>
 /// Handler for retrieving a team by ID
 /// </summary>
-public sealed class GetTeamByIdQueryHandler
+public sealed class GetTeamByIdQueryHandler : IRequestHandler<GetTeamByIdQuery, Result<TeamDto>>
 {
     private readonly ITeamRepository _teamRepository;
     private readonly ICurrentUserService _currentUserService;
@@ -25,13 +25,13 @@ public sealed class GetTeamByIdQueryHandler
         _currentUserService = currentUserService;
     }
 
-    public async Task<Result<TeamDto>> Handle(Guid teamId, CancellationToken cancellationToken)
+    public async Task<Result<TeamDto>> Handle(GetTeamByIdQuery request, CancellationToken cancellationToken)
     {
         try
         {
             var userId = _currentUserService.UserId ?? throw new UnauthorizedAccessException("User ID not found");
 
-            var team = await _teamRepository.GetByIdWithMembersAsync(TeamId.Create(teamId), cancellationToken);
+            var team = await _teamRepository.GetByIdWithMembersAsync(TeamId.Create(request.TeamId), cancellationToken);
 
             if (team == null)
             {

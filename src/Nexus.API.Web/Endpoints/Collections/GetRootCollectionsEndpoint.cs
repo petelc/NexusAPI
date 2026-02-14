@@ -1,3 +1,4 @@
+using MediatR;
 using FastEndpoints;
 using Nexus.API.UseCases.Collections.Queries;
 using Nexus.API.UseCases.Collections.Handlers;
@@ -11,16 +12,16 @@ namespace Nexus.API.Web.Endpoints.Collections;
 /// </summary>
 public class GetRootCollectionsEndpoint : EndpointWithoutRequest
 {
-  private readonly GetRootCollectionsHandler _handler;
+  private readonly IMediator _mediator;
 
-  public GetRootCollectionsEndpoint(GetRootCollectionsHandler handler)
+  public GetRootCollectionsEndpoint(IMediator mediator)
   {
-    _handler = handler;
+    _mediator = mediator;
   }
 
   public override void Configure()
   {
-    Get("/api/v1/workspaces/{workspaceId}/collections/roots");
+    Get("/workspaces/{workspaceId}/collections/roots");
     Roles("Viewer", "Editor", "Admin");
 
     Description(b => b
@@ -45,7 +46,7 @@ public class GetRootCollectionsEndpoint : EndpointWithoutRequest
 
     try
     {
-      var result = await _handler.Handle(query, ct);
+      var result = await _mediator.Send(query, ct);
 
       if (result.IsSuccess)
       {

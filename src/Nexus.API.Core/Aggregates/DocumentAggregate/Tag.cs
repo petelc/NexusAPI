@@ -1,12 +1,14 @@
 using Ardalis.GuardClauses;
 using Traxs.SharedKernel;
+using Nexus.API.Core.ValueObjects;
+
 
 namespace Nexus.API.Core.Aggregates.DocumentAggregate;
 
 /// <summary>
 /// Represents a tag that can be applied to documents, diagrams, and snippets
 /// </summary>
-public class Tag : EntityBase<Guid>
+public class Tag : EntityBase<TagId>
 {
     public string Name { get; private set; } = null!;
     public string? Color { get; private set; }
@@ -20,23 +22,20 @@ public class Tag : EntityBase<Guid>
     /// </summary>
     public static Tag Create(string name, string? color = null)
     {
-        Guard.Against.NullOrWhiteSpace(name, nameof(name));
-        Guard.Against.OutOfRange(name.Length, nameof(name), 1, 50, "Tag name must be between 1 and 50 characters");
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Tag name cannot be empty.", nameof(name));
 
-        if (color != null)
-        {
-            Guard.Against.InvalidFormat(color, nameof(color), @"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$", "Color must be a valid hex code");
-        }
+        var normalised = name.Trim().ToLowerInvariant();
+        if (normalised.Length > 50)
+            throw new ArgumentException("Tag name cannot exceed 50 characters.", nameof(name));
 
-        var tag = new Tag
+        return new Tag
         {
-            Id = Guid.NewGuid(),
-            Name = name.Trim().ToLowerInvariant(),
+            Id = TagId.CreateNew(),
+            Name = normalised,
             Color = color,
             CreatedAt = DateTime.UtcNow
         };
-
-        return tag;
     }
 
     /// <summary>

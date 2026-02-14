@@ -1,4 +1,6 @@
 using MediatR;
+using Ardalis.Result;
+using Nexus.API.UseCases.Teams.DTOs;
 
 namespace Nexus.API.UseCases.Teams.Commands;
 
@@ -8,7 +10,7 @@ namespace Nexus.API.UseCases.Teams.Commands;
 public sealed record UpdateTeamCommand(
     Guid TeamId,
     string? Name,
-    string? Description) : IRequest<UpdateTeamResult>;
+    string? Description) : IRequest<Result<TeamDto>>;
 
 /// <summary>
 /// Result of updating a team

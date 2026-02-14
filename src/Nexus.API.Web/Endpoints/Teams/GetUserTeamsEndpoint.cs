@@ -1,6 +1,7 @@
+using MediatR;
 using FastEndpoints;
 using System.Security.Claims;
-using Nexus.API.UseCases.Teams.Handlers;
+using Nexus.API.UseCases.Teams.Queries;
 
 namespace Nexus.API.Web.Endpoints.Teams;
 
@@ -11,16 +12,16 @@ namespace Nexus.API.Web.Endpoints.Teams;
 /// </summary>
 public class GetUserTeamsEndpoint : EndpointWithoutRequest
 {
-    private readonly GetUserTeamsQueryHandler _handler;
+    private readonly IMediator _mediator;
 
-    public GetUserTeamsEndpoint(GetUserTeamsQueryHandler handler)
+    public GetUserTeamsEndpoint(IMediator mediator)
     {
-        _handler = handler;
+        _mediator = mediator;
     }
 
     public override void Configure()
     {
-        Get("/api/v1/teams/my");
+        Get("/teams/my");
         Roles("Viewer", "Editor", "Admin");
 
         Description(b => b
@@ -41,7 +42,8 @@ public class GetUserTeamsEndpoint : EndpointWithoutRequest
 
         try
         {
-            var result = await _handler.Handle(ct);
+            var query = new GetUserTeamsQuery();
+            var result = await _mediator.Send(query, ct);
 
             if (result.IsSuccess)
             {

@@ -1,6 +1,7 @@
+using MediatR;
 using FastEndpoints;
 using System.Security.Claims;
-using Nexus.API.UseCases.Teams.Handlers;
+using Nexus.API.UseCases.Teams.Commands;
 
 namespace Nexus.API.Web.Endpoints.Teams;
 
@@ -11,16 +12,16 @@ namespace Nexus.API.Web.Endpoints.Teams;
 /// </summary>
 public class DeleteTeamEndpoint : EndpointWithoutRequest
 {
-    private readonly DeleteTeamCommandHandler _handler;
+    private readonly IMediator _mediator;
 
-    public DeleteTeamEndpoint(DeleteTeamCommandHandler handler)
+    public DeleteTeamEndpoint(IMediator mediator)
     {
-        _handler = handler;
+        _mediator = mediator;
     }
 
     public override void Configure()
     {
-        Delete("/api/v1/teams/{id}");
+        Delete("/teams/{id}");
         Roles("Admin");
 
         Description(b => b
@@ -49,7 +50,8 @@ public class DeleteTeamEndpoint : EndpointWithoutRequest
 
         try
         {
-            var result = await _handler.Handle(teamId, ct);
+            var command = new DeleteTeamCommand(teamId);
+            var result = await _mediator.Send(command, ct);
 
             if (result.IsSuccess)
             {

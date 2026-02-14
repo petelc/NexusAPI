@@ -14,6 +14,9 @@ using Nexus.API.Core.Interfaces;
 using Nexus.API.Infrastructure.Data.Repositories;
 using Nexus.API.Web.Extensions;
 using Nexus.API.Web.Hubs;
+using Nexus.API.Web.Configuration;
+using Nexus.API.Web.Middleware;
+using Nexus.API.Infrastructure.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -118,8 +121,7 @@ builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 // Add Code Snippet repository
 builder.Services.AddScoped<ICodeSnippetRepository, CodeSnippetRepository>();
 
-// Add Tag repository
-builder.Services.AddScoped<ITagRepository, TagRepository>();
+
 
 builder.Services.AddScoped<ITeamRepository, TeamRepository>();
 
@@ -155,9 +157,28 @@ builder.Services.AddSignalR(options =>
 
 builder.Services.AddCollaborationServices();
 
-
+// Rate limiting (Phase A)
+builder.Services.AddNexusRateLimiting();
 
 var app = builder.Build();
+
+// Global exception handler — must be FIRST in the pipeline
+app.UseMiddleware<GlobalExceptionMiddleware>();
+
+// Configure middleware pipeline
+app.ConfigureMiddleware();
+
+// Rate limiter — after exception handler, before auth
+app.UseRateLimiter();
+
+app.UseFastEndpoints(config =>
+{
+  config.Endpoints.RoutePrefix = "api/v1";  // ✅ Global prefix for ALL endpoints
+
+  // Optional: Configure versioning
+  config.Versioning.Prefix = "v";  // Results in /api/v1, /api/v2, etc.
+  config.Versioning.PrependToRoute = false;  // Don't add version to individual routes
+});
 
 // Seed database
 using (var scope = app.Services.CreateScope())
@@ -165,8 +186,9 @@ using (var scope = app.Services.CreateScope())
   await SeedData.InitializeAsync(scope.ServiceProvider);
 }
 
-// Configure middleware pipeline
-app.ConfigureMiddleware();
+
+app.UseMiddleware<AuditMiddleware>();
+
 
 app.MapHub<CollaborationHub>("/hubs/collaboration");
 

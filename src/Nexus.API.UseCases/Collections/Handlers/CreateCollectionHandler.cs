@@ -1,4 +1,5 @@
 using Ardalis.Result;
+using MediatR;
 using Nexus.API.Core.Aggregates.CollectionAggregate;
 using Nexus.API.Core.Aggregates.WorkspaceAggregate;
 using Nexus.API.Core.Interfaces;
@@ -11,7 +12,7 @@ namespace Nexus.API.UseCases.Collections.Handlers;
 /// <summary>
 /// Handler for creating a new collection
 /// </summary>
-public class CreateCollectionHandler
+public class CreateCollectionHandler : IRequestHandler<CreateCollectionCommand, Result<CreateCollectionResponse>>
 {
   private readonly ICollectionRepository _collectionRepository;
   private readonly ICurrentUserService _currentUserService;

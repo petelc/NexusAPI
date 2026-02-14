@@ -1,295 +1,274 @@
 using Elastic.Clients.Elasticsearch;
-using Elastic.Transport;
+using Elastic.Clients.Elasticsearch.Aggregations;
+using Elastic.Clients.Elasticsearch.QueryDsl;
+using Nexus.API.Core.Entities;
 using Nexus.API.Core.Interfaces;
-using Nexus.API.Core.Models;
 
 namespace Nexus.API.Infrastructure.Services;
 
 /// <summary>
-/// Elasticsearch service for full-text search and analytics.
-/// Implements the ISearchService interface from the Core layer.
+/// Elasticsearch implementation of ISearchService.
+/// Uses Elastic.Clients.Elasticsearch v8.x API.
+///
+/// Register as Singleton:
+///   services.AddSingleton&lt;ISearchService, ElasticsearchService&gt;();
 /// </summary>
 public class ElasticsearchService : ISearchService
 {
-  private readonly ElasticsearchClient _client;
-  private readonly ILogger<ElasticsearchService> _logger;
-  private const string DocumentsIndexName = "nexus-documents";
-  private const string DiagramsIndexName = "nexus-diagrams";
-  private const string SnippetsIndexName = "nexus-snippets";
+    private readonly ElasticsearchClient _client;
+    private const string IndexName = "nexus-content";
 
-  public ElasticsearchService(
-    ILogger<ElasticsearchService> logger,
-    IConfiguration configuration)
-  {
-    _logger = logger;
-
-    var uri = configuration["Elasticsearch:Uri"] ?? "http://localhost:9200";
-    var username = configuration["Elasticsearch:Username"];
-    var password = configuration["Elasticsearch:Password"];
-
-    var settings = new ElasticsearchClientSettings(new Uri(uri))
-      .DefaultIndex(DocumentsIndexName)
-      .RequestTimeout(TimeSpan.FromSeconds(30));
-
-    if (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password))
+    public ElasticsearchService(ElasticsearchClient client)
     {
-      settings.Authentication(new BasicAuthentication(username, password));
+        _client = client ?? throw new ArgumentNullException(nameof(client));
     }
 
-    _client = new ElasticsearchClient(settings);
-  }
-
-  /// <summary>
-  /// Initialize Elasticsearch indexes
-  /// </summary>
-  public async Task InitializeIndexesAsync(CancellationToken cancellationToken = default)
-  {
-    try
+    private async Task EnsureIndexExistsAsync()
     {
-      // Create documents index
-      await CreateDocumentIndexAsync(cancellationToken);
+        var exists = await _client.Indices.ExistsAsync(IndexName);
+        if (exists.Exists)
+            return;
 
-      // Create diagrams index
-      await CreateDiagramIndexAsync(cancellationToken);
-
-      // Create snippets index
-      await CreateSnippetIndexAsync(cancellationToken);
-
-      _logger.LogInformation("Elasticsearch indexes initialized successfully");
-    }
-    catch (Exception ex)
-    {
-      _logger.LogError(ex, "Error initializing Elasticsearch indexes");
-      throw;
-    }
-  }
-
-  /// <summary>
-  /// Index a document for searching
-  /// </summary>
-  public async Task IndexDocumentAsync(
-    Guid documentId,
-    string title,
-    string content,
-    IEnumerable<string> tags,
-    Guid userId,
-    CancellationToken cancellationToken = default)
-  {
-    try
-    {
-      var searchDocument = new DocumentSearchModel
-      {
-        DocumentId = documentId,
-        Title = title,
-        Content = content,
-        Tags = tags.ToList(),
-        UserId = userId,
-        IndexedAt = DateTime.UtcNow
-      };
-
-      var response = await _client.IndexAsync(
-        searchDocument,
-        idx => idx.Index(DocumentsIndexName).Id(documentId.ToString()),
-        cancellationToken);
-
-      if (!response.IsValidResponse)
-      {
-        _logger.LogWarning("Failed to index document {DocumentId}: {Error}",
-          documentId, response.DebugInformation);
-      }
-      else
-      {
-        _logger.LogInformation("Document {DocumentId} indexed successfully", documentId);
-      }
-    }
-    catch (Exception ex)
-    {
-      _logger.LogError(ex, "Error indexing document {DocumentId}", documentId);
-      throw;
-    }
-  }
-
-  /// <summary>
-  /// Search documents with full-text search
-  /// </summary>
-  public async Task<SearchResults> SearchDocumentsAsync(
-    string query,
-    int page = 1,
-    int pageSize = 20,
-    IEnumerable<string>? tags = null,
-    Guid? userId = null,
-    CancellationToken cancellationToken = default)
-  {
-    try
-    {
-      var from = (page - 1) * pageSize;
-
-      // TODO: Fix Elasticsearch API compatibility issues
-      // Temporarily return empty results until Elasticsearch client API is fixed
-      _logger.LogWarning("Elasticsearch search temporarily disabled due to API compatibility issues");
-      return new SearchResults { Results = new List<SearchResult>(), TotalCount = 0 };
-    }
-    catch (Exception ex)
-    {
-      _logger.LogError(ex, "Error searching documents with query: {Query}", query);
-      throw;
-    }
-  }
-
-  /// <summary>
-  /// Delete a document from the search index
-  /// </summary>
-  public async Task DeleteDocumentAsync(
-    Guid documentId,
-    CancellationToken cancellationToken = default)
-  {
-    try
-    {
-      var response = await _client.DeleteAsync<DocumentSearchModel>(
-        documentId.ToString(),
-        idx => idx.Index(DocumentsIndexName),
-        cancellationToken);
-
-      if (!response.IsValidResponse)
-      {
-        _logger.LogWarning("Failed to delete document {DocumentId} from index: {Error}",
-          documentId, response.DebugInformation);
-      }
-      else
-      {
-        _logger.LogInformation("Document {DocumentId} deleted from index successfully", documentId);
-      }
-    }
-    catch (Exception ex)
-    {
-      _logger.LogError(ex, "Error deleting document {DocumentId} from index", documentId);
-      throw;
-    }
-  }
-
-  /// <summary>
-  /// Get search suggestions/autocomplete
-  /// </summary>
-  public async Task<IEnumerable<string>> GetSuggestionsAsync(
-    string prefix,
-    int maxSuggestions = 10,
-    CancellationToken cancellationToken = default)
-  {
-    try
-    {
-      var searchResponse = await _client.SearchAsync<DocumentSearchModel>(s => s
-        .Index(DocumentsIndexName)
-        .Size(maxSuggestions)
-        .Query(q => q
-          .MatchPhrase(mp => mp
-            .Field(f => f.Title)
-            .Query(prefix)
-          )
-        )
-      , cancellationToken);
-
-      if (!searchResponse.IsValidResponse)
-      {
-        return Enumerable.Empty<string>();
-      }
-
-      return searchResponse.Documents.Select(d => d.Title).Distinct();
-    }
-    catch (Exception ex)
-    {
-      _logger.LogError(ex, "Error getting suggestions for prefix: {Prefix}", prefix);
-      return Enumerable.Empty<string>();
-    }
-  }
-
-  private async Task CreateDocumentIndexAsync(CancellationToken cancellationToken)
-  {
-    var indexExists = await _client.Indices.ExistsAsync(DocumentsIndexName, cancellationToken);
-
-    if (indexExists.Exists)
-    {
-      _logger.LogInformation("Documents index already exists");
-      return;
+        await _client.Indices.CreateAsync(IndexName, c => c
+            .Mappings(m => m
+                .Properties<ContentDocument>(p => p
+                    .Keyword(k => k.Type)
+                    .Keyword(k => k.Id)
+                    .Text(t => t.Title)
+                    .Text(t => t.Content!)
+                    .Keyword(k => k.CreatedByUsername)
+                    .Date(d => d.CreatedAt)
+                    .Keyword(k => k.Tags)
+                )
+            )
+        );
     }
 
-    var response = await _client.Indices.CreateAsync<DocumentSearchModel>(
-      DocumentsIndexName,
-      cancellationToken);
-
-    if (!response.IsValidResponse)
+    public async Task<SearchResponse> SearchAsync(
+        string query,
+        string? types = null,
+        int page = 1,
+        int pageSize = 20,
+        CancellationToken cancellationToken = default)
     {
-      _logger.LogWarning("Failed to create documents index: {Error}", response.DebugInformation);
+        var from = (page - 1) * pageSize;
+
+        var typeFilter = types?.Split(',', StringSplitOptions.RemoveEmptyEntries)
+            .Select(t => t.Trim().ToLowerInvariant())
+            .ToList();
+
+        // Build bool query
+        var boolQuery = new BoolQuery
+        {
+            Must = new Query[]
+            {
+                new MultiMatchQuery
+                {
+                    Query = query,
+                    Fields = new[] { "title^2", "content" }
+                }
+            }
+        };
+
+        if (typeFilter != null && typeFilter.Any())
+        {
+            boolQuery.Filter = new List<Query>
+            {
+                new TermsQuery
+                {
+                    Field = "type"!,
+                    Terms = new TermsQueryField(typeFilter.Select(t => FieldValue.String(t)).ToArray())
+                }
+            };
+        }
+
+        var searchResponse = await _client.SearchAsync<ContentDocument>(s => s
+            .Index(IndexName)
+            .Query(boolQuery)
+            .From(from)
+            .Size(pageSize)
+            .Highlight(h => h
+                .Fields(f => f
+                    .Add("title"!, hf => hf.FragmentSize(150).NumberOfFragments(1))
+                    .Add("content"!, hf => hf.FragmentSize(150).NumberOfFragments(2))
+                )
+                .PreTags(new[] { "<em>" })
+                .PostTags(new[] { "</em>" })
+            )
+            .Aggregations(a => a
+                .Add("types", agg => agg.Terms(t => t.Field("type").Size(10)))
+                .Add("tags", agg => agg.Terms(t => t.Field("tags").Size(20)))
+            ),
+            cancellationToken
+        );
+
+        if (!searchResponse.IsValidResponse)
+        {
+            var errorMessage = searchResponse.ElasticsearchServerError?.Error?.Reason ?? "Unknown error";
+            throw new InvalidOperationException($"Elasticsearch search failed: {errorMessage}");
+        }
+
+        var results = new List<SearchResult>();
+
+        if (searchResponse.Hits != null)
+        {
+            foreach (var hit in searchResponse.Hits)
+            {
+                if (hit.Source == null) continue;
+
+                var highlights = new List<string>();
+                if (hit.Highlight != null)
+                {
+                    foreach (var kvp in hit.Highlight)
+                    {
+                        highlights.AddRange(kvp.Value);
+                    }
+                }
+
+                var excerpt = hit.Source.Content?.Length > 200
+                    ? hit.Source.Content.Substring(0, 200) + "..."
+                    : hit.Source.Content ?? "";
+
+                results.Add(new SearchResult
+                {
+                    Type = hit.Source.Type,
+                    Id = hit.Source.Id,
+                    Title = hit.Source.Title,
+                    Excerpt = excerpt,
+                    Score = hit.Score ?? 0,
+                    Highlights = highlights,
+                    CreatedByUsername = hit.Source.CreatedByUsername,
+                    CreatedAt = hit.Source.CreatedAt
+                });
+            }
+        }
+
+        var facets = new SearchFacets
+        {
+            Types = ExtractFacetCounts(searchResponse, "types"),
+            Tags = ExtractFacetCounts(searchResponse, "tags")
+        };
+
+        var totalCount = searchResponse.Total > int.MaxValue ? int.MaxValue : (int)searchResponse.Total;
+
+        return new SearchResponse
+        {
+            Query = query,
+            Results = results,
+            TotalCount = totalCount,
+            Facets = facets
+        };
     }
-  }
 
-  private async Task CreateDiagramIndexAsync(CancellationToken cancellationToken)
-  {
-    var indexExists = await _client.Indices.ExistsAsync(DiagramsIndexName, cancellationToken);
-
-    if (indexExists.Exists)
+    public async Task IndexDocumentAsync(
+        Guid documentId,
+        string title,
+        string content,
+        string createdByUsername,
+        DateTime createdAt,
+        List<string>? tags = null,
+        CancellationToken cancellationToken = default)
     {
-      _logger.LogInformation("Diagrams index already exists");
-      return;
+        var doc = new ContentDocument
+        {
+            Type = "document",
+            Id = documentId,
+            Title = title,
+            Content = content,
+            CreatedByUsername = createdByUsername,
+            CreatedAt = createdAt,
+            Tags = tags ?? new List<string>()
+        };
+
+        await _client.IndexAsync(doc, idx => idx.Index(IndexName).Id(documentId.ToString()), cancellationToken);
     }
 
-    var response = await _client.Indices.CreateAsync(DiagramsIndexName, cancellationToken);
-
-    if (!response.IsValidResponse)
+    public async Task IndexDiagramAsync(
+        Guid diagramId,
+        string title,
+        string createdByUsername,
+        DateTime createdAt,
+        List<string>? tags = null,
+        CancellationToken cancellationToken = default)
     {
-      _logger.LogWarning("Failed to create diagrams index: {Error}", response.DebugInformation);
+        var doc = new ContentDocument
+        {
+            Type = "diagram",
+            Id = diagramId,
+            Title = title,
+            Content = string.Empty,
+            CreatedByUsername = createdByUsername,
+            CreatedAt = createdAt,
+            Tags = tags ?? new List<string>()
+        };
+
+        await _client.IndexAsync(doc, idx => idx.Index(IndexName).Id(diagramId.ToString()), cancellationToken);
     }
-  }
 
-  private async Task CreateSnippetIndexAsync(CancellationToken cancellationToken)
-  {
-    var indexExists = await _client.Indices.ExistsAsync(SnippetsIndexName, cancellationToken);
-
-    if (indexExists.Exists)
+    public async Task IndexSnippetAsync(
+        Guid snippetId,
+        string title,
+        string code,
+        string language,
+        string createdByUsername,
+        DateTime createdAt,
+        List<string>? tags = null,
+        CancellationToken cancellationToken = default)
     {
-      _logger.LogInformation("Snippets index already exists");
-      return;
+        var doc = new ContentDocument
+        {
+            Type = "snippet",
+            Id = snippetId,
+            Title = title,
+            Content = code,
+            CreatedByUsername = createdByUsername,
+            CreatedAt = createdAt,
+            Tags = tags ?? new List<string>()
+        };
+
+        await _client.IndexAsync(doc, idx => idx.Index(IndexName).Id(snippetId.ToString()), cancellationToken);
     }
 
-    var response = await _client.Indices.CreateAsync(SnippetsIndexName, cancellationToken);
-
-    if (!response.IsValidResponse)
+    public async Task RemoveFromIndexAsync(
+        string type,
+        Guid resourceId,
+        CancellationToken cancellationToken = default)
     {
-      _logger.LogWarning("Failed to create snippets index: {Error}", response.DebugInformation);
+        await _client.DeleteAsync<ContentDocument>(IndexName, resourceId.ToString(), cancellationToken);
     }
-  }
 
-  private string GetHighlightedContent(
-    IReadOnlyDictionary<string, IReadOnlyCollection<string>>? highlights,
-    string originalContent)
-  {
-    if (highlights == null || !highlights.Any())
+    private static Dictionary<string, int> ExtractFacetCounts(
+        SearchResponse<ContentDocument> response,
+        string aggregationName)
     {
-      return originalContent.Length > 200 ? originalContent.Substring(0, 200) + "..." : originalContent;
-    }
+        if (response.Aggregations == null || !response.Aggregations.TryGetValue(aggregationName, out var agg))
+            return new Dictionary<string, int>();
 
-    if (highlights.TryGetValue("content", out var contentHighlights) && contentHighlights.Any())
-    {
-      return string.Join(" ... ", contentHighlights);
-    }
+        if (agg is not StringTermsAggregate termsAgg || termsAgg.Buckets == null)
+            return new Dictionary<string, int>();
 
-    if (highlights.TryGetValue("title", out var titleHighlights) && titleHighlights.Any())
-    {
-      return titleHighlights.First();
-    }
+        var result = new Dictionary<string, int>();
+        foreach (var bucket in termsAgg.Buckets)
+        {
+            var key = bucket.Key.ToString() ?? "";
+            var count = (int)bucket.DocCount;
+            result[key] = count;
+        }
 
-    return originalContent.Length > 200 ? originalContent.Substring(0, 200) + "..." : originalContent;
-  }
+        return result;
+    }
 }
 
 /// <summary>
-/// Document model for Elasticsearch indexing (Infrastructure-specific)
+/// Internal document model for Elasticsearch.
 /// </summary>
-public class DocumentSearchModel
+internal class ContentDocument
 {
-  public Guid DocumentId { get; set; }
-  public string Title { get; set; } = string.Empty;
-  public string Content { get; set; } = string.Empty;
-  public List<string> Tags { get; set; } = new();
-  public Guid UserId { get; set; }
-  public DateTime IndexedAt { get; set; }
+    public string Type { get; set; } = string.Empty;
+    public Guid Id { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string? Content { get; set; }
+    public string CreatedByUsername { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; }
+    public List<string> Tags { get; set; } = new();
 }

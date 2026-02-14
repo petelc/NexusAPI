@@ -1,8 +1,10 @@
 using Nexus.API.UseCases.Collections.DTOs;
+using MediatR;
+using Ardalis.Result;
 
 namespace Nexus.API.UseCases.Collections.Queries;
 
-public class GetRootCollectionsQuery
+public class GetRootCollectionsQuery : IRequest<Result<GetRootCollectionsResponse>>
 {
   public Guid WorkspaceId { get; set; }
 }

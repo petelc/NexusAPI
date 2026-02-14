@@ -1,4 +1,5 @@
 using Ardalis.Result;
+using MediatR;
 using Nexus.API.Core.Aggregates.CollectionAggregate;
 using Nexus.API.Core.Interfaces;
 using Nexus.API.Core.ValueObjects;
@@ -7,7 +8,7 @@ using Nexus.API.UseCases.Collections.Queries;
 
 namespace Nexus.API.UseCases.Collections.Handlers;
 
-public class GetChildCollectionsHandler
+public class GetChildCollectionsHandler : IRequestHandler<GetChildCollectionsQuery, Result<GetChildCollectionsResponse>>
 {
   private readonly ICollectionRepository _collectionRepository;
 

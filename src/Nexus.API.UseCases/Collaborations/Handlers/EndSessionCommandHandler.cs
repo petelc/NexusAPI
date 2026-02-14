@@ -1,4 +1,5 @@
 using Ardalis.Result;
+using MediatR;
 using Nexus.API.Core.Interfaces;
 using Nexus.API.UseCases.Collaboration.Commands;
 using Nexus.API.UseCases.Collaboration.Interfaces;
@@ -9,7 +10,7 @@ namespace Nexus.API.UseCases.Collaboration.Handlers;
 /// Handler for ending a collaboration session.
 /// Depends only on UseCases-layer interfaces - Clean Architecture compliant.
 /// </summary>
-public class EndSessionCommandHandler
+public class EndSessionCommandHandler : IRequestHandler<EndSessionCommand, Result>
 {
     private readonly ICollaborationRepository _collaborationRepository;
     private readonly ICollaborationNotificationService _notificationService;

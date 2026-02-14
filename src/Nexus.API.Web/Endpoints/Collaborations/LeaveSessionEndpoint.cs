@@ -1,3 +1,4 @@
+using MediatR;
 using FastEndpoints;
 using System.Security.Claims;
 using Nexus.API.Core.ValueObjects;
@@ -13,16 +14,16 @@ namespace Nexus.API.Web.Endpoints.Collaboration;
 /// </summary>
 public class LeaveSessionEndpoint : EndpointWithoutRequest
 {
-    private readonly LeaveSessionCommandHandler _handler;
+    private readonly IMediator _mediator;
 
-    public LeaveSessionEndpoint(LeaveSessionCommandHandler handler)
+    public LeaveSessionEndpoint(IMediator mediator)
     {
-        _handler = handler;
+        _mediator = mediator;
     }
 
     public override void Configure()
     {
-        Post("/api/v1/collaboration/sessions/{id}/leave");
+        Post("/collaboration/sessions/{id}/leave");
         Roles("Viewer", "Editor", "Admin");
 
         Description(b => b
@@ -56,7 +57,7 @@ public class LeaveSessionEndpoint : EndpointWithoutRequest
                 SessionId = SessionId.Create(sessionId),
                 UserId = ParticipantId.Create(userId)
             };
-            var result = await _handler.Handle(command, ct);
+            var result = await _mediator.Send(command, ct);
 
             if (result.IsSuccess)
             {

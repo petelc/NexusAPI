@@ -1,4 +1,6 @@
 using MediatR;
+using Ardalis.Result;
+using Nexus.API.UseCases.Teams.DTOs;
 
 namespace Nexus.API.UseCases.Teams.Commands;
 
@@ -8,7 +10,7 @@ namespace Nexus.API.UseCases.Teams.Commands;
 public sealed record AddTeamMemberCommand(
     Guid TeamId,
     Guid UserId,
-    string Role) : IRequest<AddTeamMemberResult>;
+    string Role) : IRequest<Result<TeamMemberDto>>;
 
 /// <summary>
 /// Result of adding a team member

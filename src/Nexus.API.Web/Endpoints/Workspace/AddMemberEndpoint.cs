@@ -1,7 +1,7 @@
+using MediatR;
 using System.Security.Claims;
 using FastEndpoints;
 using Nexus.API.UseCases.Workspaces.Commands;
-using Nexus.API.UseCases.Workspaces.Handlers;
 
 namespace Nexus.API.Web.Endpoints.Workspaces;
 
@@ -10,16 +10,16 @@ namespace Nexus.API.Web.Endpoints.Workspaces;
 /// </summary>
 public class AddMemberEndpoint : EndpointWithoutRequest
 {
-  private readonly AddMemberHandler _handler;
+  private readonly IMediator _mediator;
 
-  public AddMemberEndpoint(AddMemberHandler handler)
+  public AddMemberEndpoint(IMediator mediator)
   {
-    _handler = handler;
+    _mediator = mediator;
   }
 
   public override void Configure()
   {
-    Post("/api/v1/workspaces/{id}/members");
+    Post("/workspaces/{id}/members");
     Roles("Editor", "Admin");
     Description(b => b
       .WithTags("Workspaces")
@@ -82,7 +82,7 @@ public class AddMemberEndpoint : EndpointWithoutRequest
       var command = new AddMemberCommand(workspaceId, request.UserId, request.Role);
 
       // Handle
-      var result = await _handler.Handle(command, ct);
+      var result = await _mediator.Send(command, ct);
 
       if (result.IsSuccess)
       {

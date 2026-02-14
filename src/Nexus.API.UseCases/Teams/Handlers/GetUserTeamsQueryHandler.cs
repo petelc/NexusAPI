@@ -12,7 +12,7 @@ namespace Nexus.API.UseCases.Teams.Handlers;
 /// <summary>
 /// Handler for retrieving user's teams
 /// </summary>
-public sealed class GetUserTeamsQueryHandler
+public sealed class GetUserTeamsQueryHandler : IRequestHandler<GetUserTeamsQuery, Result<IEnumerable<TeamSummaryDto>>>
 {
     private readonly ITeamRepository _teamRepository;
     private readonly ICurrentUserService _currentUserService;
@@ -25,7 +25,7 @@ public sealed class GetUserTeamsQueryHandler
         _currentUserService = currentUserService;
     }
 
-    public async Task<Result<List<TeamSummaryDto>>> Handle(CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<TeamSummaryDto>>> Handle(GetUserTeamsQuery request, CancellationToken cancellationToken)
     {
         try
         {
@@ -46,7 +46,7 @@ public sealed class GetUserTeamsQueryHandler
                     UserRole = team.GetMemberRole(userId)?.ToString()
                 })
                 .OrderBy(t => t.Name)
-                .ToList();
+                .AsEnumerable();
 
             return Result.Success(dtos);
         }

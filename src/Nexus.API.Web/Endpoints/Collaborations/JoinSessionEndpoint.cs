@@ -1,3 +1,4 @@
+using MediatR;
 using FastEndpoints;
 using System.Security.Claims;
 using Nexus.API.Core.ValueObjects;
@@ -13,16 +14,16 @@ namespace Nexus.API.Web.Endpoints.Collaboration;
 /// </summary>
 public class JoinSessionEndpoint : EndpointWithoutRequest
 {
-    private readonly JoinSessionCommandHandler _handler;
+    private readonly IMediator _mediator;
 
-    public JoinSessionEndpoint(JoinSessionCommandHandler handler)
+    public JoinSessionEndpoint(IMediator mediator)
     {
-        _handler = handler;
+        _mediator = mediator;
     }
 
     public override void Configure()
     {
-        Post("/api/v1/collaboration/sessions/{id}/join");
+        Post("/collaboration/sessions/{id}/join");
         Roles("Viewer", "Editor", "Admin");
 
         Description(b => b
@@ -67,7 +68,7 @@ public class JoinSessionEndpoint : EndpointWithoutRequest
 
         try
         {
-            var result = await _handler.Handle(command, ct);
+            var result = await _mediator.Send(command, ct);
 
             if (result.IsSuccess)
             {

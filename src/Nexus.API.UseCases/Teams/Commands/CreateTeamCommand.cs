@@ -1,4 +1,5 @@
 using MediatR;
+using Ardalis.Result;
 
 namespace Nexus.API.UseCases.Teams.Commands;
 
@@ -7,7 +8,7 @@ namespace Nexus.API.UseCases.Teams.Commands;
 /// </summary>
 public sealed record CreateTeamCommand(
     string Name,
-    string? Description) : IRequest<CreateTeamResult>;
+    string? Description) : IRequest<Result<CreateTeamResult>>;
 
 /// <summary>
 /// Result of creating a team

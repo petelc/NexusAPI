@@ -29,7 +29,7 @@ public class UpdateElementEndpoint : EndpointWithoutRequest
 
   public override void Configure()
   {
-    Put("/api/v1/diagrams/{diagramId}/elements/{elementId}");
+    Put("/diagrams/{diagramId}/elements/{elementId}");
     Roles("Editor", "Admin");
 
     Description(b => b
@@ -84,7 +84,7 @@ public class UpdateElementEndpoint : EndpointWithoutRequest
 
       var elementIdVO = ElementId.Create(elementId);
       var element = diagram.Elements.FirstOrDefault(e => e.Id == elementIdVO);
-      
+
       if (element == null)
       {
         HttpContext.Response.StatusCode = 404;

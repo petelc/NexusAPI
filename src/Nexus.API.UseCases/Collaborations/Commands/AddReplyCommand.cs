@@ -1,4 +1,7 @@
 using Nexus.API.Core.ValueObjects;
+using MediatR;
+using Ardalis.Result;
+using Nexus.API.UseCases.Collaboration.DTOs;
 
 namespace Nexus.API.UseCases.Collaboration.Commands;
 
@@ -8,4 +11,4 @@ namespace Nexus.API.UseCases.Collaboration.Commands;
 public record AddReplyCommand(
     CommentId ParentCommentId,
     UserId UserId,
-    string Text);
+    string Text) : IRequest<Result<CommentResponseDto>>;

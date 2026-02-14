@@ -31,7 +31,7 @@ public class AddElementEndpoint : EndpointWithoutRequest
 
   public override void Configure()
   {
-    Post("/api/v1/diagrams/{diagramId}/elements");
+    Post("/diagrams/{diagramId}/elements");
     Roles("Editor", "Admin");
 
     Description(b => b

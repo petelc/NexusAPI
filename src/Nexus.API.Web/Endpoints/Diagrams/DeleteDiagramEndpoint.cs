@@ -21,7 +21,7 @@ public class DeleteDiagramEndpoint : EndpointWithoutRequest
 
   public override void Configure()
   {
-    Delete("/api/v1/diagrams/{diagramId}");
+    Delete("/diagrams/{diagramId}");
     Roles("Editor", "Admin");
 
     Description(b => b

@@ -10,7 +10,7 @@ namespace Nexus.API.UseCases.Collections.Handlers;
 /// <summary>
 /// Handler for updating a collection
 /// </summary>
-public class UpdateCollectionHandler
+public class UpdateCollectionHandler : IRequestHandler<UpdateCollectionCommand, Result<UpdateCollectionResponse>>
 {
   private readonly ICollectionRepository _collectionRepository;
 

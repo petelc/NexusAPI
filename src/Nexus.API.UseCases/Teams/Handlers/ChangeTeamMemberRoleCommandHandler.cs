@@ -1,17 +1,19 @@
 using MediatR;
+using Ardalis.Result;
 using Microsoft.Extensions.Logging;
 using Nexus.API.Core.Aggregates.TeamAggregate;
 using Nexus.API.Core.Enums;
 using Nexus.API.Core.Interfaces;
 using Nexus.API.Core.ValueObjects;
 using Nexus.API.UseCases.Teams.Commands;
+using Nexus.API.UseCases.Teams.DTOs;
 
 namespace Nexus.API.UseCases.Teams.Handlers;
 
 /// <summary>
 /// Handler for changing a team member's role
 /// </summary>
-public sealed class ChangeTeamMemberRoleCommandHandler
+public sealed class ChangeTeamMemberRoleCommandHandler : IRequestHandler<ChangeTeamMemberRoleCommand, Result<TeamMemberDto>>
 {
     private readonly ITeamRepository _teamRepository;
     private readonly ICurrentUserService _currentUserService;
@@ -27,17 +29,15 @@ public sealed class ChangeTeamMemberRoleCommandHandler
         _logger = logger;
     }
 
-    public async Task<Result<ChangeTeamMemberRoleResult>> Handle(
-        Guid teamId,
-        Guid targetUserId,
-        string newRole,
+    public async Task<Result<TeamMemberDto>> Handle(
+        ChangeTeamMemberRoleCommand request,
         CancellationToken cancellationToken)
     {
         try
         {
             var currentUserId = _currentUserService.UserId ?? throw new UnauthorizedAccessException("User ID not found");
 
-            var team = await _teamRepository.GetByIdWithMembersAsync(TeamId.Create(teamId), cancellationToken);
+            var team = await _teamRepository.GetByIdWithMembersAsync(TeamId.Create(request.TeamId), cancellationToken);
 
             if (team == null)
             {
@@ -49,32 +49,35 @@ public sealed class ChangeTeamMemberRoleCommandHandler
                 return Result.Unauthorized();
             }
 
-            if (!Enum.TryParse<TeamRole>(newRole, ignoreCase: true, out var role))
+            if (!Enum.TryParse<TeamRole>(request.NewRole, ignoreCase: true, out var role))
             {
-                return Result.Error($"Invalid role: {newRole}. Valid roles are: Member, Admin, Owner");
+                return Result.Error($"Invalid role: {request.NewRole}. Valid roles are: Member, Admin, Owner");
             }
 
-            var member = team.GetMember(targetUserId);
+            var member = team.GetMember(request.UserId);
             if (member == null)
             {
-                return Result.Error($"User {targetUserId} is not a member of this team");
+                return Result.Error($"User {request.UserId} is not a member of this team");
             }
 
             var oldRole = member.Role;
-            team.ChangeMemberRole(targetUserId, role);
+            team.ChangeMemberRole(request.UserId, role);
             await _teamRepository.UpdateAsync(team, cancellationToken);
 
             _logger.LogInformation(
                 "User {UserId} role changed from {OldRole} to {NewRole} in team {TeamId}",
-                targetUserId,
+                request.UserId,
                 oldRole,
                 role,
                 team.Id.Value);
 
-            var result = new ChangeTeamMemberRoleResult(
-                UserId: targetUserId,
-                OldRole: oldRole.ToString(),
-                NewRole: role.ToString());
+            var result = new TeamMemberDto
+            {
+                UserId = request.UserId,
+                Role = role.ToString(),
+                JoinedAt = member.JoinedAt,
+                IsActive = member.IsActive
+            };
 
             return Result.Success(result);
         }
@@ -84,7 +87,7 @@ public sealed class ChangeTeamMemberRoleCommandHandler
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error changing member role in team {TeamId}", teamId);
+            _logger.LogError(ex, "Error changing member role in team {TeamId}", request.TeamId);
             return Result.Error(ex.Message);
         }
     }

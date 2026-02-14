@@ -21,7 +21,7 @@ public class DeleteElementEndpoint : EndpointWithoutRequest
 
   public override void Configure()
   {
-    Delete("/api/v1/diagrams/{diagramId}/elements/{elementId}");
+    Delete("/diagrams/{diagramId}/elements/{elementId}");
     Roles("Editor", "Admin");
 
     Description(b => b

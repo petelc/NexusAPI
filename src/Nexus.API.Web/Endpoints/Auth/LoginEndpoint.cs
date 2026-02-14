@@ -4,6 +4,7 @@ using Nexus.API.Core.Entities;
 using Nexus.API.Core.Interfaces;
 using Nexus.API.Infrastructure.Identity;
 using Nexus.API.UseCases.Auth.DTOs;
+using UserDto = Nexus.API.UseCases.Auth.DTOs.UserDto;
 
 namespace Nexus.API.Web.Endpoints.Auth;
 

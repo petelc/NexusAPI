@@ -1,4 +1,5 @@
 using Ardalis.Result;
+using MediatR;
 using Nexus.API.Core.Aggregates.CollaborationAggregate;
 using Nexus.API.Core.Enums;
 using Nexus.API.Core.Interfaces;
@@ -11,7 +12,7 @@ namespace Nexus.API.UseCases.Collaboration.Handlers;
 /// <summary>
 /// Handler for getting comments for a specific resource
 /// </summary>
-public class GetResourceCommentsQueryHandler
+public class GetResourceCommentsQueryHandler : IRequestHandler<GetResourceCommentsQuery, Result<IEnumerable<CommentResponseDto>>>
 {
     private readonly ICollaborationRepository _collaborationRepository;
 
@@ -20,14 +21,14 @@ public class GetResourceCommentsQueryHandler
         _collaborationRepository = collaborationRepository ?? throw new ArgumentNullException(nameof(collaborationRepository));
     }
 
-    public async Task<Result<CommentsResponseDto>> Handle(
+    public async Task<Result<IEnumerable<CommentResponseDto>>> Handle(
         GetResourceCommentsQuery query,
         CancellationToken cancellationToken)
     {
         // Validate resource type
         if (!Enum.TryParse<ResourceType>(query.ResourceType, true, out var resourceType))
         {
-            return Result<CommentsResponseDto>.Invalid(
+            return Result<IEnumerable<CommentResponseDto>>.Invalid(
                 new ValidationError { ErrorMessage = $"Invalid resource type: {query.ResourceType}" });
         }
 
@@ -42,13 +43,9 @@ public class GetResourceCommentsQueryHandler
         var topLevelComments = comments.Where(c => c.ParentCommentId == null).ToList();
 
         // Map to response DTO
-        var response = new CommentsResponseDto
-        {
-            Comments = topLevelComments.Select(MapToResponseDto).ToList(),
-            TotalCount = topLevelComments.Count
-        };
+        var response = topLevelComments.Select(MapToResponseDto);
 
-        return Result<CommentsResponseDto>.Success(response);
+        return Result<IEnumerable<CommentResponseDto>>.Success(response);
     }
 
     private static CommentResponseDto MapToResponseDto(Comment comment)

@@ -1,4 +1,5 @@
 using MediatR;
+using Ardalis.Result;
 using Nexus.API.Core.Interfaces;
 using Nexus.API.Core.Aggregates.CollaborationAggregate;
 using Nexus.API.Core.ValueObjects;
@@ -11,7 +12,7 @@ namespace Nexus.API.UseCases.Collaboration.Handlers;
 /// <summary>
 /// Handler for getting active sessions for a resource
 /// </summary>
-public class GetActiveSessionsQueryHandler
+public class GetActiveSessionsQueryHandler : IRequestHandler<GetActiveSessionsQuery, Result<IEnumerable<CollaborationSessionResponseDto>>>
 {
     private readonly ICollaborationRepository _collaborationRepository;
 
@@ -20,28 +21,24 @@ public class GetActiveSessionsQueryHandler
         _collaborationRepository = collaborationRepository ?? throw new ArgumentNullException(nameof(collaborationRepository));
     }
 
-    public async Task<Result<ActiveSessionsResponseDto>> Handle(
-        string resourceType,
-        ResourceId resourceId,
+    public async Task<Result<IEnumerable<CollaborationSessionResponseDto>>> Handle(
+        GetActiveSessionsQuery request,
         CancellationToken cancellationToken)
     {
-        if (!Enum.TryParse<ResourceType>(resourceType, true, out var parsedResourceType))
+        if (!Enum.TryParse<ResourceType>(request.ResourceType, true, out var parsedResourceType))
         {
-            return Result<ActiveSessionsResponseDto>.Invalid(
-                new ValidationError { ErrorMessage = $"Invalid resource type: {resourceType}" });
+            return Result<IEnumerable<CollaborationSessionResponseDto>>.Invalid(
+                new ValidationError { ErrorMessage = $"Invalid resource type: {request.ResourceType}" });
         }
 
         var sessions = await _collaborationRepository.GetActiveSessionsByResourceAsync(
             parsedResourceType,
-            resourceId,
+            request.ResourceId,
             cancellationToken);
 
-        var response = new ActiveSessionsResponseDto
-        {
-            Sessions = sessions.Select(MapToResponseDto).ToList()
-        };
+        var response = sessions.Select(MapToResponseDto);
 
-        return Result<ActiveSessionsResponseDto>.Success(response);
+        return Result<IEnumerable<CollaborationSessionResponseDto>>.Success(response);
     }
 
     private static CollaborationSessionResponseDto MapToResponseDto(

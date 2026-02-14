@@ -30,7 +30,7 @@ public class AddConnectionEndpoint : EndpointWithoutRequest
 
   public override void Configure()
   {
-    Post("/api/v1/diagrams/{diagramId}/connections");
+    Post("/diagrams/{diagramId}/connections");
     Roles("Editor", "Admin");
 
     Description(b => b

@@ -1,4 +1,5 @@
 using Nexus.API.Core.ValueObjects;
+using MediatR;
 
 namespace Nexus.API.UseCases.Collaboration.Commands;
 
@@ -7,4 +8,4 @@ namespace Nexus.API.UseCases.Collaboration.Commands;
 /// </summary>
 public record DeleteCommentCommand(
     CommentId CommentId,
-    UserId UserId);
+    UserId UserId) : IRequest<Result>;

@@ -38,4 +38,16 @@ public interface IUserRepository : IRepositoryBase<User>
   /// Get all active users
   /// </summary>
   Task<List<User>> GetActiveUsersAsync(CancellationToken cancellationToken = default);
+
 }
+
+/// <summary>
+/// DTO representing a user for the UseCases layer.
+/// </summary>
+public class UserDto
+{
+  public string Id { get; set; } = string.Empty;
+  public string Email { get; set; } = string.Empty;
+  public string UserName { get; set; } = string.Empty;
+}
+

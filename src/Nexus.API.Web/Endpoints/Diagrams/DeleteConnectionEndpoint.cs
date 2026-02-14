@@ -21,7 +21,7 @@ public class DeleteConnectionEndpoint : EndpointWithoutRequest
 
   public override void Configure()
   {
-    Delete("/api/v1/diagrams/{diagramId}/connections/{connectionId}");
+    Delete("/diagrams/{diagramId}/connections/{connectionId}");
     Roles("Editor", "Admin");
 
     Description(b => b

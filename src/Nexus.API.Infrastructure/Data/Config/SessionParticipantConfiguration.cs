@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Nexus.API.Core.Aggregates.CollaborationAggregate;
+using Nexus.API.Core.ValueObjects;
 
 namespace Nexus.API.Infrastructure.Data.Config;
 
@@ -17,11 +18,17 @@ public class SessionParticipantConfiguration : IEntityTypeConfiguration<SessionP
         // Primary key
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Id)
+            .HasConversion(
+                id => id.Value,
+                value => ParticipantId.Create(value))
             .HasColumnName("ParticipantId")
             .ValueGeneratedNever(); // Generated in domain
 
         // Properties
         builder.Property(e => e.SessionId)
+            .HasConversion(
+                id => id.Value,
+                value => SessionId.Create(value))
             .IsRequired();
 
         builder.Property(e => e.UserId)

@@ -74,7 +74,7 @@ builder.Services.AddCors(options =>
 {
   options.AddPolicy("NexusCorsPolicy", policy =>
   {
-    policy.WithOrigins(builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? new[] { "http://localhost:3000" })
+    policy.WithOrigins(builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? new[] { "https://localhost:3000" })
           .AllowAnyMethod()
           .AllowAnyHeader()
           .AllowCredentials();

@@ -87,6 +87,9 @@ public class CollectionConfiguration : IEntityTypeConfiguration<Collection>
       hp.Property(p => p.Level)
         .HasColumnName("HierarchyLevel")
         .IsRequired();
+
+      hp.HasIndex(p => p.Value)
+        .HasDatabaseName("IX_Collections_HierarchyPath");
     });
 
     // Self-referencing relationship (Parent-Child)
@@ -96,7 +99,7 @@ public class CollectionConfiguration : IEntityTypeConfiguration<Collection>
       .OnDelete(DeleteBehavior.Restrict);
 
     // Items collection (one-to-many)
-    builder.HasMany<CollectionItem>("_items")
+    builder.HasMany(c => c.Items)
       .WithOne()
       .HasForeignKey("CollectionId")
       .OnDelete(DeleteBehavior.Cascade);
@@ -110,9 +113,6 @@ public class CollectionConfiguration : IEntityTypeConfiguration<Collection>
 
     builder.HasIndex(c => new { c.ParentCollectionId, c.OrderIndex })
       .HasDatabaseName("IX_Collections_OrderIndex");
-
-    builder.HasIndex(c => c.HierarchyPath.Value)
-      .HasDatabaseName("IX_Collections_HierarchyPath");
 
     // Query filter for soft delete
     builder.HasQueryFilter(c => !c.IsDeleted);

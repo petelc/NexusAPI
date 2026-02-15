@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Nexus.API.Core.Aggregates.CollaborationAggregate;
+using Nexus.API.Core.ValueObjects;
 
 namespace Nexus.API.Infrastructure.Data.Config;
 
@@ -17,6 +18,9 @@ public class CollaborationSessionConfiguration : IEntityTypeConfiguration<Collab
         // Primary key
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Id)
+            .HasConversion(
+                id => id.Value,
+                value => SessionId.Create(value))
             .ValueGeneratedNever(); // Generated in domain
 
         // Properties

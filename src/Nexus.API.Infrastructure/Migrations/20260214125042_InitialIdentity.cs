@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Nexus.API.Infrastructure.Migrations.IdentityDb
+namespace Nexus.API.Infrastructure.Migrations
 {
     /// <inheritdoc />
     public partial class InitialIdentity : Migration

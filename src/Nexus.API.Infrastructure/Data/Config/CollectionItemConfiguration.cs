@@ -26,7 +26,10 @@ public class CollectionItemConfiguration : IEntityTypeConfiguration<CollectionIt
       .IsRequired();
 
     // Shadow property for foreign key to Collection
-    builder.Property<Guid>("CollectionId")
+    builder.Property<CollectionId>("CollectionId")
+      .HasConversion(
+        id => id.Value,
+        value => CollectionId.Create(value))
       .IsRequired();
 
     // Properties
@@ -48,7 +51,7 @@ public class CollectionItemConfiguration : IEntityTypeConfiguration<CollectionIt
       .IsRequired();
 
     // Indexes
-    builder.HasIndex("CollectionId", "OrderIndex")
+    builder.HasIndex("CollectionId", "Order")
       .HasDatabaseName("IX_CollectionItems_CollectionId");
 
     builder.HasIndex(ci => new { ci.ItemType, ci.ItemReferenceId })

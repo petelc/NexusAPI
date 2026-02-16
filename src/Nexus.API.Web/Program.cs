@@ -89,6 +89,7 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
+  options.MapInboundClaims = false;
   options.TokenValidationParameters = new TokenValidationParameters
   {
     ValidateIssuer = true,
@@ -98,7 +99,9 @@ builder.Services.AddAuthentication(options =>
     ValidIssuer = builder.Configuration["Jwt:Issuer"],
     ValidAudience = builder.Configuration["Jwt:Audience"],
     IssuerSigningKey = new SymmetricSecurityKey(
-      Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key not configured")))
+      Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key not configured"))),
+    RoleClaimType = "role",
+    NameClaimType = "name"
   };
 });
 

@@ -18,6 +18,7 @@ public class TagConfiguration : IEntityTypeConfiguration<Tag>
         builder.HasKey(t => t.Id);
 
         builder.Property(t => t.Id)
+            .HasColumnName("TagId")
             .HasConversion(id => id.Value, value => TagId.Create(value))
             .IsRequired();
 

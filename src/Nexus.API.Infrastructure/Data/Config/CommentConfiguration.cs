@@ -21,7 +21,7 @@ public class CommentConfiguration : IEntityTypeConfiguration<Comment>
             .HasConversion(
                 id => id.Value,
                 value => CommentId.Create(value))
-            .HasColumnName("CommentId")
+            .HasColumnName("Id")
             .ValueGeneratedNever(); // Generated in domain
 
         // Map CLR Guid? SessionId as a regular column (not used as FK)

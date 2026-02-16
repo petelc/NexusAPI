@@ -13,7 +13,7 @@ public class ResourcePermissionConfiguration : IEntityTypeConfiguration<Resource
         builder.HasKey(p => p.Id);
 
         builder.Property(p => p.Id)
-            .HasColumnName("PermissionId")
+            .HasColumnName("Id")
             .ValueGeneratedNever();
 
         builder.Property(p => p.ResourceType)

@@ -50,7 +50,7 @@ public class AuditMiddleware
 
         // Extract user information from JWT claims
         var userId = context.User.FindFirstValue("uid");
-        var userEmail = context.User.FindFirstValue(ClaimTypes.Email);
+        var userEmail = context.User.FindFirstValue("email");
         var ipAddress = context.Connection.RemoteIpAddress?.ToString();
         var userAgent = context.Request.Headers["User-Agent"].FirstOrDefault();
 

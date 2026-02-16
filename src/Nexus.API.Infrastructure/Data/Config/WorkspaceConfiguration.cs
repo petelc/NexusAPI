@@ -24,7 +24,7 @@ public class WorkspaceConfiguration : IEntityTypeConfiguration<Workspace>
       .HasConversion(
         id => id.Value,
         value => WorkspaceId.Create(value))
-      .HasColumnName("WorkspaceId")
+      .HasColumnName("Id")
       .IsRequired();
 
     // Properties
@@ -72,7 +72,7 @@ public class WorkspaceConfiguration : IEntityTypeConfiguration<Workspace>
         .HasConversion(
           id => id.Value,
           value => WorkspaceMemberId.Create(value))
-        .HasColumnName("MemberId")
+        .HasColumnName("Id")
         .IsRequired();
 
       mb.Property(m => m.UserId)

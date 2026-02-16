@@ -1,7 +1,9 @@
 using FastEndpoints;
 using Microsoft.AspNetCore.Identity;
+using Nexus.API.Core.Aggregates.UserAggregate;
 using Nexus.API.Core.Entities;
 using Nexus.API.Core.Interfaces;
+using Nexus.API.Core.ValueObjects;
 using Nexus.API.Infrastructure.Identity;
 using Nexus.API.UseCases.Auth.DTOs;
 using UserDto = Nexus.API.UseCases.Auth.DTOs.UserDto;
@@ -17,15 +19,18 @@ public class RegisterEndpoint : Endpoint<RegisterRequestDto, AuthResponseDto>
   private readonly UserManager<ApplicationUser> _userManager;
   private readonly IJwtTokenService _jwtTokenService;
   private readonly IRefreshTokenRepository _refreshTokenRepository;
+  private readonly IUserRepository _userRepository;
 
   public RegisterEndpoint(
     UserManager<ApplicationUser> userManager,
     IJwtTokenService jwtTokenService,
-    IRefreshTokenRepository refreshTokenRepository)
+    IRefreshTokenRepository refreshTokenRepository,
+    IUserRepository userRepository)
   {
     _userManager = userManager;
     _jwtTokenService = jwtTokenService;
     _refreshTokenRepository = refreshTokenRepository;
+    _userRepository = userRepository;
   }
 
   public override void Configure()
@@ -89,6 +94,16 @@ public class RegisterEndpoint : Endpoint<RegisterRequestDto, AuthResponseDto>
 
     // Assign default role
     await _userManager.AddToRoleAsync(user, "Viewer");
+
+    // Create corresponding domain user in dbo.Users (same ID for FK relationships)
+    var domainUser = Nexus.API.Core.Aggregates.UserAggregate.User.CreateFromIdentity(
+      user.Id,
+      new Email(user.Email!),
+      user.UserName!,
+      new PersonName(user.FirstName, user.LastName),
+      user.PasswordHash ?? string.Empty);
+
+    await _userRepository.AddAsync(domainUser, ct);
 
     // Generate JWT tokens
     var roles = await _userManager.GetRolesAsync(user);

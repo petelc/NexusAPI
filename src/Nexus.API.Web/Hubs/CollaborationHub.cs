@@ -33,7 +33,7 @@ public class CollaborationHub : Hub
     public override async Task OnConnectedAsync()
     {
         var userId = GetUserId();
-        var username = Context.User?.FindFirstValue(ClaimTypes.Name) ?? "Unknown";
+        var username = Context.User?.FindFirstValue("name") ?? "Unknown";
 
         _logger.LogInformation("User {UserId} ({Username}) connected: {ConnectionId}",
             userId, username, Context.ConnectionId);
@@ -58,7 +58,7 @@ public class CollaborationHub : Hub
             if (!_connectionManager.IsUserConnected(sessionId.Value, userId))
             {
                 // Notify others that user left
-                var username = Context.User?.FindFirstValue(ClaimTypes.Name) ?? "Unknown";
+                var username = Context.User?.FindFirstValue("name") ?? "Unknown";
                 await Clients.Group(sessionId.Value.ToString())
                     .SendAsync("ParticipantLeft", new ParticipantInfoDto
                     {
@@ -96,7 +96,7 @@ public class CollaborationHub : Hub
     public async Task JoinSession(SessionId sessionId)
     {
         var userId = GetUserId();
-        var username = Context.User?.FindFirstValue(ClaimTypes.Name) ?? "Unknown";
+        var username = Context.User?.FindFirstValue("name") ?? "Unknown";
         var fullName = Context.User?.FindFirstValue("name") ?? username;
 
         _logger.LogInformation("User {UserId} joining session {SessionId}", userId, sessionId);
@@ -185,7 +185,7 @@ public class CollaborationHub : Hub
     public async Task LeaveSession(SessionId sessionId)
     {
         var userId = GetUserId();
-        var username = Context.User?.FindFirstValue(ClaimTypes.Name) ?? "Unknown";
+        var username = Context.User?.FindFirstValue("name") ?? "Unknown";
 
         _logger.LogInformation("User {UserId} leaving session {SessionId}", userId, sessionId);
 
@@ -234,7 +234,7 @@ public class CollaborationHub : Hub
     public async Task UpdateCursorPosition(SessionId sessionId, int position)
     {
         var userId = GetUserId();
-        var username = Context.User?.FindFirstValue(ClaimTypes.Name) ?? "Unknown";
+        var username = Context.User?.FindFirstValue("name") ?? "Unknown";
 
         // Update in connection manager
         _connectionManager.UpdateCursorPosition(sessionId, userId, position);
@@ -256,7 +256,7 @@ public class CollaborationHub : Hub
     public async Task NotifyTyping(SessionId sessionId, bool isTyping)
     {
         var userId = GetUserId();
-        var username = Context.User?.FindFirstValue(ClaimTypes.Name) ?? "Unknown";
+        var username = Context.User?.FindFirstValue("name") ?? "Unknown";
 
         // Update in connection manager
         _connectionManager.UpdateTypingStatus(sessionId, userId, isTyping);
@@ -304,7 +304,7 @@ public class CollaborationHub : Hub
     private Guid GetUserId()
     {
         var userIdClaim = Context.User?.FindFirstValue("uid")
-            ?? Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            ?? Context.User?.FindFirstValue("sub");
 
         if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
         {

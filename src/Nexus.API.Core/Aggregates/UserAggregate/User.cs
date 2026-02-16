@@ -82,6 +82,34 @@ public class User : EntityBase<UserId>, IAggregateRoot
   }
 
   /// <summary>
+  /// Factory method to create a domain user from an existing identity user (same ID)
+  /// </summary>
+  public static User CreateFromIdentity(
+    Guid existingId,
+    Email email,
+    string username,
+    PersonName fullName,
+    string passwordHash)
+  {
+    Guard.Against.Null(email, nameof(email));
+    Guard.Against.NullOrWhiteSpace(username, nameof(username));
+    Guard.Against.Null(fullName, nameof(fullName));
+    Guard.Against.NullOrWhiteSpace(passwordHash, nameof(passwordHash));
+
+    var user = new User(
+      UserId.From(existingId),
+      email,
+      username,
+      fullName,
+      passwordHash
+    );
+
+    user.RegisterDomainEvent(new UserCreatedEvent(user.Id, email, username));
+
+    return user;
+  }
+
+  /// <summary>
   /// Confirm the user's email address
   /// </summary>
   public void ConfirmEmail()

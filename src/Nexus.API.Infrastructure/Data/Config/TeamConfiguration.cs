@@ -13,7 +13,7 @@ public class TeamConfiguration : IEntityTypeConfiguration<Team>
 {
     public void Configure(EntityTypeBuilder<Team> builder)
     {
-        builder.ToTable("Teams", "identity");
+        builder.ToTable("Teams", "dbo");
 
         // Primary Key
         builder.HasKey(t => t.Id);
@@ -22,7 +22,7 @@ public class TeamConfiguration : IEntityTypeConfiguration<Team>
             .HasConversion(
                 id => id.Value,
                 value => TeamId.Create(value))
-            .HasColumnName("TeamId")
+            .HasColumnName("Id")
             .IsRequired();
 
         // Properties
@@ -51,7 +51,7 @@ public class TeamConfiguration : IEntityTypeConfiguration<Team>
         // Owned Entity - TeamMembers
         builder.OwnsMany(t => t.Members, membersBuilder =>
         {
-            membersBuilder.ToTable("TeamMembers", "identity");
+            membersBuilder.ToTable("TeamMembers", "dbo");
 
             // Composite Primary Key
             membersBuilder.WithOwner()
@@ -63,7 +63,7 @@ public class TeamConfiguration : IEntityTypeConfiguration<Team>
                 .HasConversion(
                     id => id.Value,
                     value => TeamMemberId.Create(value))
-                .HasColumnName("MemberId")
+                .HasColumnName("Id")
                 .IsRequired();
 
             membersBuilder.Property(m => m.TeamId)

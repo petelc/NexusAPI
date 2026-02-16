@@ -21,7 +21,7 @@ public class SessionChangeConfiguration : IEntityTypeConfiguration<SessionChange
             .HasConversion(
                 id => id.Value,
                 value => ChangeId.Create(value))
-            .HasColumnName("ChangeId")
+            .HasColumnName("Id")
             .ValueGeneratedNever(); // Generated in domain
 
         // Properties

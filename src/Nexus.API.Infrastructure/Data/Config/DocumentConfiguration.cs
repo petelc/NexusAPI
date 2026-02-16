@@ -12,7 +12,7 @@ public class DocumentConfiguration : IEntityTypeConfiguration<Document>
 {
     public void Configure(EntityTypeBuilder<Document> builder)
     {
-        builder.ToTable("Documents");
+        builder.ToTable("Documents", "dbo");
 
         // Primary Key
         builder.HasKey(d => d.Id);
@@ -83,7 +83,8 @@ public class DocumentConfiguration : IEntityTypeConfiguration<Document>
             .UsingEntity(
                 "DocumentTags",
                 l => l.HasOne(typeof(Tag)).WithMany().HasForeignKey("TagId").OnDelete(DeleteBehavior.Cascade),
-                r => r.HasOne(typeof(Document)).WithMany().HasForeignKey("DocumentId").OnDelete(DeleteBehavior.Cascade));
+                r => r.HasOne(typeof(Document)).WithMany().HasForeignKey("DocumentId").OnDelete(DeleteBehavior.Cascade),
+                j => j.ToTable("DocumentTags", "dbo"));
 
         // Relationships - Versions (One-to-Many)
         builder.HasMany(d => d.Versions)

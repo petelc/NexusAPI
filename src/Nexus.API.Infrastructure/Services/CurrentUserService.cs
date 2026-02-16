@@ -23,8 +23,9 @@ public class CurrentUserService : ICurrentUserService
   {
     get
     {
-      var userIdClaim = _httpContextAccessor.HttpContext?.User?
-        .FindFirst(ClaimTypes.NameIdentifier)?.Value;
+      // Try "uid" custom claim first, then fall back to "sub" (JWT standard)
+      var userIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirst("uid")?.Value
+        ?? _httpContextAccessor.HttpContext?.User?.FindFirst("sub")?.Value;
 
       if (string.IsNullOrWhiteSpace(userIdClaim))
         return null;
@@ -41,7 +42,7 @@ public class CurrentUserService : ICurrentUserService
     get
     {
       var emailClaim = _httpContextAccessor.HttpContext?.User?
-        .FindFirst(ClaimTypes.Email)?.Value;
+        .FindFirst("email")?.Value;
 
       if (string.IsNullOrWhiteSpace(emailClaim))
         return null;
@@ -55,7 +56,7 @@ public class CurrentUserService : ICurrentUserService
     get
     {
       return _httpContextAccessor.HttpContext?.User?
-        .FindFirst(ClaimTypes.Name)?.Value;
+        .FindFirst("name")?.Value;
     }
   }
 

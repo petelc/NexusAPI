@@ -24,7 +24,7 @@ public class JwtTokenService : IJwtTokenService
       throw new ArgumentException("User must be ApplicationUser", nameof(user));
 
     var securityKey = new SymmetricSecurityKey(
-      Encoding.UTF8.GetBytes(_configuration["Jwt:Secret"]!));
+      Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
     var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
     var jwtId = Guid.NewGuid().ToString();
@@ -43,7 +43,7 @@ public class JwtTokenService : IJwtTokenService
     // Add roles as claims
     foreach (var role in roles)
     {
-      claims.Add(new Claim(ClaimTypes.Role, role));
+      claims.Add(new Claim("role", role));
     }
 
     var token = new JwtSecurityToken(
@@ -67,7 +67,7 @@ public class JwtTokenService : IJwtTokenService
   public ClaimsPrincipal? ValidateToken(string token)
   {
     var tokenHandler = new JwtSecurityTokenHandler();
-    var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Secret"]!);
+    var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!);
 
     try
     {

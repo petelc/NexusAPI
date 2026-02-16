@@ -16,15 +16,18 @@ public class CollaborationHub : Hub
 {
     private readonly IConnectionManager _connectionManager;
     private readonly ICollaborationRepository _collaborationRepository;
+    private readonly IUserRepository _userRepository;
     private readonly ILogger<CollaborationHub> _logger;
 
     public CollaborationHub(
         IConnectionManager connectionManager,
         ICollaborationRepository collaborationRepository,
+        IUserRepository userRepository,
         ILogger<CollaborationHub> logger)
     {
         _connectionManager = connectionManager ?? throw new ArgumentNullException(nameof(connectionManager));
         _collaborationRepository = collaborationRepository ?? throw new ArgumentNullException(nameof(collaborationRepository));
+        _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -135,25 +138,45 @@ public class CollaborationHub : Hub
             .SendAsync("ParticipantJoined", participantInfo);
 
         // Send current session state to joining user
-        var allParticipants = session.Participants
+        // Look up all active participant user info
+        var activeParticipants = session.Participants
             .Where(p => p.IsActive && _connectionManager.IsUserConnected(sessionId, p.UserId))
-            .Select(p => new ParticipantInfoDto
+            .ToList();
+        var participantUserIds = activeParticipants.Select(p => p.UserId).Distinct().ToList();
+        var userLookup = new Dictionary<Guid, Core.Aggregates.UserAggregate.User>();
+        foreach (var uid in participantUserIds)
+        {
+            var user = await _userRepository.GetByIdAsync(UserId.From(uid));
+            if (user != null)
+                userLookup[uid] = user;
+        }
+
+        var allParticipants = activeParticipants
+            .Select(p =>
             {
-                UserId = p.UserId,
-                Username = username, // TODO: Get from user service
-                FullName = fullName, // TODO: Get from user service
-                Role = p.Role.ToString(),
-                JoinedAt = p.JoinedAt
+                userLookup.TryGetValue(p.UserId, out var pUser);
+                return new ParticipantInfoDto
+                {
+                    UserId = p.UserId,
+                    Username = pUser?.Username ?? "Unknown",
+                    FullName = pUser != null ? $"{pUser.FullName.FirstName} {pUser.FullName.LastName}" : "Unknown User",
+                    Role = p.Role.ToString(),
+                    JoinedAt = p.JoinedAt
+                };
             })
             .ToList();
 
         var cursorPositions = _connectionManager.GetAllCursorPositions(sessionId)
-            .Select(kvp => new CursorPositionDto
+            .Select(kvp =>
             {
-                UserId = kvp.Key,
-                Username = username, // TODO: Get from user service
-                Position = kvp.Value,
-                Timestamp = DateTime.UtcNow
+                userLookup.TryGetValue(kvp.Key, out var cUser);
+                return new CursorPositionDto
+                {
+                    UserId = kvp.Key,
+                    Username = cUser?.Username ?? "Unknown",
+                    Position = kvp.Value,
+                    Timestamp = DateTime.UtcNow
+                };
             })
             .ToList();
 

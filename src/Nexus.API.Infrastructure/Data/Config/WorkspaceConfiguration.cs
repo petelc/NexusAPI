@@ -15,7 +15,7 @@ public class WorkspaceConfiguration : IEntityTypeConfiguration<Workspace>
 {
   public void Configure(EntityTypeBuilder<Workspace> builder)
   {
-    builder.ToTable("Workspaces");
+    builder.ToTable("Workspaces", "dbo");
 
     // Primary Key
     builder.HasKey(w => w.Id);
@@ -62,7 +62,7 @@ public class WorkspaceConfiguration : IEntityTypeConfiguration<Workspace>
     // Owned Collection: Members
     builder.OwnsMany(w => w.Members, mb =>
     {
-      mb.ToTable("WorkspaceMembers");
+      mb.ToTable("WorkspaceMembers", "dbo");
 
       mb.WithOwner().HasForeignKey("WorkspaceId");
 

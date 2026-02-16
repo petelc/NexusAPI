@@ -8,7 +8,7 @@ public class ResourcePermissionConfiguration : IEntityTypeConfiguration<Resource
 {
     public void Configure(EntityTypeBuilder<ResourcePermission> builder)
     {
-        builder.ToTable("ResourcePermissions");
+        builder.ToTable("ResourcePermissions", "dbo");
 
         builder.HasKey(p => p.Id);
 

@@ -12,6 +12,7 @@ using Nexus.API.Core.Aggregates.TeamAggregate;
 using Nexus.API.Core.Aggregates.CollaborationAggregate;
 using Nexus.API.Core.Aggregates.ResourcePermissions;
 using Nexus.API.Core.Aggregates.AuditAggregate;
+using Nexus.API.Core.Interfaces;
 
 
 
@@ -22,8 +23,15 @@ namespace Nexus.API.Infrastructure.Data;
 /// </summary>
 public class AppDbContext : DbContext
 {
+    private readonly ICurrentUserService? _currentUserService;
+
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
+    }
+
+    public AppDbContext(DbContextOptions<AppDbContext> options, ICurrentUserService currentUserService) : base(options)
+    {
+        _currentUserService = currentUserService;
     }
 
     // Document Aggregate
@@ -86,6 +94,17 @@ public class AppDbContext : DbContext
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
+        // Populate AddedBy on new DocumentTags join entries
+        if (_currentUserService?.UserId is not null)
+        {
+            var userId = _currentUserService.UserId.Value.Value;
+            foreach (var entry in ChangeTracker.Entries()
+                .Where(e => e.State == EntityState.Added && e.Metadata.GetTableName() == "DocumentTags"))
+            {
+                entry.Property("AddedBy").CurrentValue = userId;
+            }
+        }
+
         // Dispatch domain events before saving
         await DispatchDomainEventsAsync(cancellationToken);
 

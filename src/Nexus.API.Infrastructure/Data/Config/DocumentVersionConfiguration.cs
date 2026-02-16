@@ -11,10 +11,13 @@ public class DocumentVersionConfiguration : IEntityTypeConfiguration<DocumentVer
 {
     public void Configure(EntityTypeBuilder<DocumentVersion> builder)
     {
-        builder.ToTable("DocumentVersions");
+        builder.ToTable("DocumentVersions", "dbo");
 
-        // Primary Key
+        // Primary Key — client-generated Guid
         builder.HasKey(v => v.Id);
+
+        builder.Property(v => v.Id)
+            .ValueGeneratedNever();
 
         // DocumentId (Foreign Key)
         builder.Property<DocumentId>("DocumentId")

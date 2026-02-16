@@ -44,7 +44,14 @@ public class RepositoryBase<T> : IRepositoryBase<T> where T : class, IAggregateR
 
   public async Task<int> UpdateAsync(T entity, CancellationToken cancellationToken = default)
   {
-    _dbContext.Set<T>().Update(entity);
+    // Only call Update() for detached entities. For already-tracked entities,
+    // the change tracker already knows what changed — calling Update() would
+    // incorrectly mark newly Added child entities as Modified.
+    var entry = _dbContext.Entry(entity);
+    if (entry.State == EntityState.Detached)
+    {
+      _dbContext.Set<T>().Update(entity);
+    }
     return await SaveChangesAsync(cancellationToken);
   }
 

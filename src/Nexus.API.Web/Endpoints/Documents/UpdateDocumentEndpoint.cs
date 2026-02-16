@@ -52,22 +52,14 @@ public class UpdateDocumentEndpoint : Endpoint<UpdateDocumentRequest>
             return;
         }
 
-        var request = await HttpContext.Request.ReadFromJsonAsync<UpdateDocumentRequest>(ct);
-        if (request == null)
-        {
-            HttpContext.Response.StatusCode = 400;
-            await HttpContext.Response.WriteAsJsonAsync(new { error = "Invalid request body" }, ct);
-            return;
-        }
-
         try
         {
             var command = new UpdateDocumentCommand
             {
                 DocumentId = new DocumentId(documentId),
-                Title = request.Title,
-                Content = request.Content,
-                Status = request.Status,
+                Title = req.Title,
+                Content = req.Content,
+                Status = req.Status,
                 UpdatedBy = userId
             };
 

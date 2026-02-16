@@ -74,7 +74,7 @@ public sealed class UpdateDocumentCommandHandler : IRequestHandler<UpdateDocumen
                 }
             }
 
-            await _documentRepository.UpdateAsync(document, cancellationToken);
+            await _documentRepository.SaveChangesAsync(cancellationToken);
 
             return Result<UpdateDocumentResponse>.Success(
                 new UpdateDocumentResponse(

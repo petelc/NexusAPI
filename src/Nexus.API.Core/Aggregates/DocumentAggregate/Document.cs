@@ -57,6 +57,9 @@ public class Document : EntityBase<DocumentId>, IAggregateRoot
             IsDeleted = false
         };
 
+        // Create initial version (v1) snapshot
+        document.CreateVersion();
+
         // Raise domain event
         document.RegisterDomainEvent(new DocumentCreatedEvent(document.Id, createdBy));
 
@@ -244,10 +247,16 @@ public class Document : EntityBase<DocumentId>, IAggregateRoot
     private void CreateVersion()
     {
         var versionNumber = _versions.Count + 1;
+        // Create a snapshot copy of Content so the new DocumentVersion owns a
+        // distinct instance.  Sharing the same DocumentContent reference causes
+        // EF Core's owned-type change tracker to generate a spurious UPDATE on
+        // previously-tracked versions (different owned-type navigations pointing
+        // at the same object).
+        var contentSnapshot = DocumentContent.Create(Content.RichText);
         var version = DocumentVersion.Create(
             Id,
             versionNumber,
-            Content,
+            contentSnapshot,
             LastEditedBy ?? CreatedBy,
             "Auto-saved version"
         );

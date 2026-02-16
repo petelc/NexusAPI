@@ -84,7 +84,12 @@ public class DocumentConfiguration : IEntityTypeConfiguration<Document>
                 "DocumentTags",
                 l => l.HasOne(typeof(Tag)).WithMany().HasForeignKey("TagId").OnDelete(DeleteBehavior.Cascade),
                 r => r.HasOne(typeof(Document)).WithMany().HasForeignKey("DocumentId").OnDelete(DeleteBehavior.Cascade),
-                j => j.ToTable("DocumentTags", "dbo"));
+                j =>
+                {
+                    j.ToTable("DocumentTags", "dbo");
+                    j.Property<DateTime>("AddedAt").HasDefaultValueSql("GETUTCDATE()");
+                    j.Property<Guid>("AddedBy");
+                });
 
         // Relationships - Versions (One-to-Many)
         builder.HasMany(d => d.Versions)

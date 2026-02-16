@@ -12,11 +12,13 @@ public class GetDocumentByIdHandler : IRequestHandler<GetDocumentByIdQuery, GetD
 {
   private readonly IDocumentRepository _repository;
   private readonly ICurrentUserService _currentUserService;
+  private readonly IUserRepository _userRepository;
 
-  public GetDocumentByIdHandler(IDocumentRepository repository, ICurrentUserService currentUserService)
+  public GetDocumentByIdHandler(IDocumentRepository repository, ICurrentUserService currentUserService, IUserRepository userRepository)
   {
     _repository = repository;
     _currentUserService = currentUserService;
+    _userRepository = userRepository;
   }
 
   public async Task<GetDocumentByIdResponse?> Handle(
@@ -31,6 +33,7 @@ public class GetDocumentByIdHandler : IRequestHandler<GetDocumentByIdQuery, GetD
 
 
     var userId = _currentUserService.GetRequiredUserId();
+    var createdByUser = await _userRepository.GetByIdAsync(UserId.From(document.CreatedBy), cancellationToken);
 
     return new GetDocumentByIdResponse
     {
@@ -46,8 +49,8 @@ public class GetDocumentByIdHandler : IRequestHandler<GetDocumentByIdQuery, GetD
       CreatedBy = new UserDto
       {
         UserId = document.CreatedBy,
-        Username = "user", // TODO: Get from user repository
-        FullName = "User Name"
+        Username = createdByUser?.Username ?? "Unknown",
+        FullName = createdByUser != null ? $"{createdByUser.FullName.FirstName} {createdByUser.FullName.LastName}" : "Unknown User"
       },
       Tags = document.Tags.Select(t => new TagDto
       {

@@ -1,5 +1,8 @@
 using MediatR;
+using Nexus.API.Core.Aggregates.DocumentAggregate;
+using Nexus.API.Core.Enums;
 using Nexus.API.Core.Interfaces;
+using Nexus.API.Core.ValueObjects;
 
 namespace Nexus.API.UseCases.Documents.List;
 
@@ -9,27 +12,66 @@ namespace Nexus.API.UseCases.Documents.List;
 public class ListDocumentsHandler : IRequestHandler<ListDocumentsQuery, ListDocumentsResponse>
 {
   private readonly IDocumentRepository _repository;
+  private readonly IUserRepository _userRepository;
 
-  public ListDocumentsHandler(IDocumentRepository repository)
+  public ListDocumentsHandler(IDocumentRepository repository, IUserRepository userRepository)
   {
     _repository = repository;
+    _userRepository = userRepository;
   }
 
   public async Task<ListDocumentsResponse> Handle(
     ListDocumentsQuery request,
     CancellationToken cancellationToken)
   {
-    // TODO: Apply filters and pagination using specifications
-    var allDocuments = await _repository.ListAsync(cancellationToken);
+    IEnumerable<Document> documents;
 
-    // Apply search if provided
+    // Use search if provided, otherwise load all
     if (!string.IsNullOrEmpty(request.Search))
     {
-      var searchResults = await _repository.SearchAsync(request.Search, cancellationToken);
-      allDocuments = searchResults.ToList();
+      documents = await _repository.SearchAsync(request.Search, cancellationToken);
+    }
+    else
+    {
+      documents = await _repository.ListAsync(cancellationToken);
     }
 
-    // Calculate pagination
+    // Exclude soft-deleted
+    documents = documents.Where(d => !d.IsDeleted);
+
+    // Filter by status
+    if (!string.IsNullOrEmpty(request.Status) &&
+        Enum.TryParse<DocumentStatus>(request.Status, ignoreCase: true, out var statusFilter))
+    {
+      documents = documents.Where(d => d.Status == statusFilter);
+    }
+
+    // Filter by createdBy
+    if (request.CreatedBy.HasValue)
+    {
+      documents = documents.Where(d => d.CreatedBy == request.CreatedBy.Value);
+    }
+
+    // Filter by tags (comma-separated)
+    if (!string.IsNullOrEmpty(request.Tags))
+    {
+      var tagNames = request.Tags.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+      documents = documents.Where(d => tagNames.Any(t => d.Tags.Any(dt => dt.Name.Equals(t, StringComparison.OrdinalIgnoreCase))));
+    }
+
+    // Apply sorting
+    documents = (request.SortBy?.ToLowerInvariant(), request.SortOrder?.ToLowerInvariant()) switch
+    {
+      ("createdat", "asc") => documents.OrderBy(d => d.CreatedAt),
+      ("createdat", _) => documents.OrderByDescending(d => d.CreatedAt),
+      ("title", "asc") => documents.OrderBy(d => d.Title.Value),
+      ("title", "desc") => documents.OrderByDescending(d => d.Title.Value),
+      ("updatedat", "asc") => documents.OrderBy(d => d.UpdatedAt),
+      _ => documents.OrderByDescending(d => d.UpdatedAt),
+    };
+
+    // Materialize for count and pagination
+    var allDocuments = documents.ToList();
     var totalItems = allDocuments.Count;
     var totalPages = (int)Math.Ceiling(totalItems / (double)request.PageSize);
     var skip = (request.Page - 1) * request.PageSize;
@@ -39,25 +81,39 @@ public class ListDocumentsHandler : IRequestHandler<ListDocumentsQuery, ListDocu
       .Take(request.PageSize)
       .ToList();
 
-    var data = pagedDocuments.Select(d => new DocumentSummaryDto
+    // Fetch users for all distinct CreatedBy IDs
+    var userIds = pagedDocuments.Select(d => d.CreatedBy).Distinct().ToList();
+    var users = new Dictionary<Guid, Core.Aggregates.UserAggregate.User>();
+    foreach (var uid in userIds)
     {
-      DocumentId = d.Id.Value,
-      Title = d.Title.Value,
-      Excerpt = d.Content.PlainText.Length > 200
-        ? d.Content.PlainText.Substring(0, 200) + "..."
-        : d.Content.PlainText,
-      Status = d.Status.ToString().ToLower(),
-      WordCount = d.Content.WordCount,
-      ReadingTimeMinutes = CalculateReadingTime(d.Content.WordCount),
-      CreatedAt = d.CreatedAt,
-      UpdatedAt = d.UpdatedAt,
-      CreatedBy = new UserDto
+      var user = await _userRepository.GetByIdAsync(UserId.From(uid), cancellationToken);
+      if (user != null)
+        users[uid] = user;
+    }
+
+    var data = pagedDocuments.Select(d =>
+    {
+      users.TryGetValue(d.CreatedBy, out var createdByUser);
+      return new DocumentSummaryDto
       {
-        UserId = d.CreatedBy,
-        Username = "user", // TODO: Get from user repository
-        FullName = "User Name"
-      },
-      Tags = d.Tags.Select(t => t.Name).ToList()
+        DocumentId = d.Id.Value,
+        Title = d.Title.Value,
+        Excerpt = d.Content.PlainText.Length > 200
+          ? d.Content.PlainText.Substring(0, 200) + "..."
+          : d.Content.PlainText,
+        Status = d.Status.ToString().ToLower(),
+        WordCount = d.Content.WordCount,
+        ReadingTimeMinutes = CalculateReadingTime(d.Content.WordCount),
+        CreatedAt = d.CreatedAt,
+        UpdatedAt = d.UpdatedAt,
+        CreatedBy = new UserDto
+        {
+          UserId = d.CreatedBy,
+          Username = createdByUser?.Username ?? "Unknown",
+          FullName = createdByUser != null ? $"{createdByUser.FullName.FirstName} {createdByUser.FullName.LastName}" : "Unknown User"
+        },
+        Tags = d.Tags.Select(t => t.Name).ToList()
+      };
     }).ToList();
 
     return new ListDocumentsResponse

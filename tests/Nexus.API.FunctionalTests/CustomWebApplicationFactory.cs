@@ -1,4 +1,4 @@
-﻿using Nexus.API.Infrastructure.Data;
+using Nexus.API.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Testcontainers.MsSql;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -6,6 +6,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
+using Nexus.API.Infrastructure.Identity;
 
 namespace Nexus.API.FunctionalTests;
 
@@ -30,39 +32,36 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
   /// Overriding CreateHost to avoid creating a separate ServiceProvider per this thread:
   /// https://github.com/dotnet-architecture/eShopOnWeb/issues/465
   /// </summary>
-  /// <param name="builder"></param>
-  /// <returns></returns>
   protected override IHost CreateHost(IHostBuilder builder)
   {
     builder.UseEnvironment("Testing"); // will not send real emails
     var host = builder.Build();
     host.Start();
 
-    // Get service provider.
     var serviceProvider = host.Services;
 
-    // Create a scope to obtain a reference to the database
-    // context (AppDbContext).
     using (var scope = serviceProvider.CreateScope())
     {
       var scopedServices = scope.ServiceProvider;
-      var db = scopedServices.GetRequiredService<AppDbContext>();
-
       var logger = scopedServices
           .GetRequiredService<ILogger<CustomWebApplicationFactory<TProgram>>>();
 
       try
       {
-        // Apply migrations to create the database schema
-        db.Database.Migrate();
+        // Apply migrations to both database contexts
+        var appDb = scopedServices.GetRequiredService<AppDbContext>();
+        appDb.Database.Migrate();
 
-        // Seed the database with test data.
-        //SeedData.PopulateTestDataAsync(db).Wait();
+        var identityDb = scopedServices.GetRequiredService<IdentityDbContext>();
+        identityDb.Database.Migrate();
+
+        // Seed Identity roles and test user
+        SeedTestDataAsync(scopedServices).GetAwaiter().GetResult();
       }
       catch (Exception ex)
       {
         logger.LogError(ex, "An error occurred seeding the " +
-                            "database with test messages. Error: {exceptionMessage}", ex.Message);
+                            "database with test data. Error: {exceptionMessage}", ex.Message);
       }
     }
 
@@ -74,22 +73,91 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
     builder
         .ConfigureServices(services =>
         {
-          // Remove the app's ApplicationDbContext registration
-          var descriptors = services.Where(
+          // Remove the app's AppDbContext registration
+          var appDbDescriptors = services.Where(
             d => d.ServiceType == typeof(AppDbContext) ||
                  d.ServiceType == typeof(DbContextOptions<AppDbContext>))
                 .ToList();
 
-          foreach (var descriptor in descriptors)
+          foreach (var descriptor in appDbDescriptors)
           {
             services.Remove(descriptor);
           }
 
-          // Add ApplicationDbContext using the Testcontainers SQL Server instance
+          // Remove the IdentityDbContext registration
+          var identityDbDescriptors = services.Where(
+            d => d.ServiceType == typeof(IdentityDbContext) ||
+                 d.ServiceType == typeof(DbContextOptions<IdentityDbContext>))
+                .ToList();
+
+          foreach (var descriptor in identityDbDescriptors)
+          {
+            services.Remove(descriptor);
+          }
+
+          var connectionString = _dbContainer.GetConnectionString();
+
+          // Add both DbContexts using the Testcontainers SQL Server instance
           services.AddDbContext<AppDbContext>((provider, options) =>
           {
-            options.UseSqlServer(_dbContainer.GetConnectionString());
+            options.UseSqlServer(connectionString);
+          });
+
+          services.AddDbContext<IdentityDbContext>((provider, options) =>
+          {
+            options.UseSqlServer(connectionString);
           });
         });
   }
+
+  private static async Task SeedTestDataAsync(IServiceProvider services)
+  {
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
+    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+
+    // Seed roles
+    string[] roles = ["Viewer", "Editor", "Admin", "Guest"];
+    foreach (var role in roles)
+    {
+      if (!await roleManager.RoleExistsAsync(role))
+      {
+        await roleManager.CreateAsync(new IdentityRole<Guid> { Name = role });
+      }
+    }
+
+    // Seed a test user
+    var testUser = await userManager.FindByEmailAsync(TestConstants.TestUserEmail);
+    if (testUser == null)
+    {
+      testUser = new ApplicationUser
+      {
+        Id = Guid.NewGuid(),
+        Email = TestConstants.TestUserEmail,
+        UserName = TestConstants.TestUserUsername,
+        FirstName = TestConstants.TestUserFirstName,
+        LastName = TestConstants.TestUserLastName,
+        EmailConfirmed = true,
+        IsActive = true,
+        CreatedAt = DateTime.UtcNow
+      };
+
+      var result = await userManager.CreateAsync(testUser, TestConstants.TestUserPassword);
+      if (result.Succeeded)
+      {
+        await userManager.AddToRoleAsync(testUser, "Editor");
+      }
+    }
+  }
+}
+
+/// <summary>
+/// Constants shared across functional tests for the seeded test user.
+/// </summary>
+public static class TestConstants
+{
+  public const string TestUserEmail = "testuser@nexus.dev";
+  public const string TestUserPassword = "TestPass123!";
+  public const string TestUserUsername = "testuser";
+  public const string TestUserFirstName = "Test";
+  public const string TestUserLastName = "User";
 }

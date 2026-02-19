@@ -324,10 +324,7 @@ public class CodeSnippetEndpointTests : IClassFixture<CustomWebApplicationFactor
       $"/api/v1/snippets/{snippetId}/fork",
       new { Title = "My Fork" });
 
-    var forkBody = await response.Content.ReadAsStringAsync();
-    Assert.True(
-      response.StatusCode is HttpStatusCode.Created or HttpStatusCode.OK or HttpStatusCode.Forbidden,
-      $"Expected 201/200/403 but got {(int)response.StatusCode}: {forkBody}");
+    response.StatusCode.ShouldBeOneOf(HttpStatusCode.Created, HttpStatusCode.OK, HttpStatusCode.Forbidden);
   }
 
   [Fact]

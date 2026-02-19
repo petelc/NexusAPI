@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Nexus.API.Core.Aggregates.CodeSnippetAggregate;
+using Nexus.API.Core.ValueObjects;
 using Ardalis.Specification;
 using Nexus.API.Core.Interfaces;
 using Nexus.API.Infrastructure.Data;
@@ -119,20 +120,90 @@ public class CodeSnippetRepository : ICodeSnippetRepository
     CodeSnippet entity,
     CancellationToken cancellationToken = default)
   {
-    // When entity was loaded via GetByIdAsync, EF Core already tracks it.
-    // Calling Update() on a tracked entity with OwnsMany (Forks) incorrectly
-    // marks newly added SnippetFork entries as Modified instead of Added,
-    // causing a DbUpdateConcurrencyException (0 rows affected) on INSERT.
-    //
-    // If the entity is already tracked (Unchanged/Modified), skip Update()
-    // and rely on EF Core's snapshot-based change detection, which correctly
-    // detects new owned collection entries and generates INSERT statements.
-    if (_dbContext.Entry(entity).State == EntityState.Detached)
-    {
-      _dbContext.Set<CodeSnippet>().Update(entity);
-    }
+    // Disable AutoDetectChanges so that Entry() / Entries<T>() calls below do not
+    // prematurely trigger DetectChanges (which would see replaced OwnsOne instances
+    // as Delete+Add pairs and DELETE the CodeSnippets row).
+    _dbContext.ChangeTracker.AutoDetectChangesEnabled = false;
 
-    await _dbContext.SaveChangesAsync(cancellationToken);
+    try
+    {
+      // Identify new forks (Detached = not yet in the DB) before touching the tracker.
+      var newForks = entity.Forks
+        .Where(f => _dbContext.Entry(f).State == EntityState.Detached)
+        .ToList();
+
+      var entityEntry = _dbContext.Entry(entity);
+
+      if (entityEntry.State != EntityState.Detached)
+      {
+        // ── Tracked entity path (normal case: loaded via GetByIdAsync) ────────────
+        //
+        // We deliberately avoid two problematic operations:
+        //
+        // 1. entry.State = EntityState.Modified
+        //    EF Core's raw state assignment propagates to every owned entity and marks
+        //    their shadow FK key properties (e.g. ProgrammingLanguage.CodeSnippetId)
+        //    as Modified → "property is part of a key" exception.
+        //
+        // 2. Update(entity) with AutoDetect enabled
+        //    Triggers DetectChanges, which sees the replaced OwnsOne instance (e.g.
+        //    Metadata after MakePublic()) as a Delete (old) + Add (new) pair, causing
+        //    EF to DELETE the CodeSnippets row before a subsequent UPDATE finds 0 rows.
+        //
+        // Solution: use CurrentValues.SetValues() on each tracked owned-entity entry.
+        // This copies new values into the EXISTING tracked entry in-place, marking only
+        // the changed scalar properties as Modified — no state assignment, no DetectChanges.
+
+        var metadataEntry = _dbContext.ChangeTracker.Entries<SnippetMetadata>().FirstOrDefault();
+        if (metadataEntry != null)
+          metadataEntry.CurrentValues.SetValues(entity.Metadata);
+
+        var titleEntry = _dbContext.ChangeTracker.Entries<Title>().FirstOrDefault();
+        if (titleEntry != null)
+          titleEntry.CurrentValues.SetValues(entity.Title);
+
+        // Sync CodeSnippet's own scalar properties (Code, Description, UpdatedAt, …).
+        entityEntry.CurrentValues.SetValues(entity);
+      }
+      else
+      {
+        // ── Detached fallback ────────────────────────────────────────────────────
+        // Entity was not loaded via a tracking query (uncommon). Use Update() to
+        // re-attach. New forks are excluded from EF tracking (inserted via raw SQL
+        // below) to avoid the OwnsMany FK-fixup / ProgrammingLanguage key error.
+        _dbContext.Set<CodeSnippet>().Update(entity);
+
+        // Update() marks existing forks as Modified (correct) and new forks as
+        // Modified too (incorrect — new rows don't exist yet). Fix new forks.
+        foreach (var fork in newForks)
+        {
+          var forkEntry = _dbContext.Entry(fork);
+          if (forkEntry.State == EntityState.Modified)
+            forkEntry.State = EntityState.Detached; // exclude; inserted via raw SQL below
+        }
+      }
+
+      // ── Save CodeSnippet scalar + OwnsOne changes ──────────────────────────────
+      await _dbContext.SaveChangesAsync(cancellationToken);
+
+      // ── Insert new SnippetFork rows via raw SQL ─────────────────────────────────
+      // We bypass EF's OwnsMany change-tracking for new forks because attaching a
+      // new owned SnippetFork triggers FK fixup that tries to mark the shadow key
+      // ProgrammingLanguage.CodeSnippetId as Modified → "part of a key" exception.
+      foreach (var fork in newForks)
+      {
+        await _dbContext.Database.ExecuteSqlAsync(
+          $"""
+          INSERT INTO [dbo].[SnippetForks] ([OriginalSnippetId], [ForkedSnippetId], [ForkedBy], [ForkedAt])
+          VALUES ({fork.OriginalSnippetId}, {fork.ForkedSnippetId}, {fork.ForkedBy}, {fork.ForkedAt})
+          """,
+          cancellationToken);
+      }
+    }
+    finally
+    {
+      _dbContext.ChangeTracker.AutoDetectChangesEnabled = true;
+    }
   }
 
   public async Task DeleteAsync(

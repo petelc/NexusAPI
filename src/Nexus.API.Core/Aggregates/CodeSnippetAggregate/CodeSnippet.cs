@@ -147,8 +147,11 @@ public class CodeSnippet : EntityBase<Guid>, IAggregateRoot
       throw new DomainException("Cannot fork a private snippet");
     }
 
-    // Create the forked snippet
-    var fork = Create(newTitle, Code, Language, userId);
+    // Create the forked snippet with a fresh ProgrammingLanguage instance.
+    // Sharing the same Language reference would cause EF Core to try to reassign
+    // the shadow CodeSnippetId key when the fork is tracked, throwing an exception.
+    var forkLanguage = ProgrammingLanguage.Create(Language.Name, Language.FileExtension, Language.Version);
+    var fork = Create(newTitle, Code, forkLanguage, userId);
     fork.OriginalSnippetId = Id;
 
     if (!string.IsNullOrEmpty(Description))

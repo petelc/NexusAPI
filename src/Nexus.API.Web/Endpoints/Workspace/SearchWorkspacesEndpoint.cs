@@ -45,15 +45,15 @@ public class SearchWorkspacesEndpoint : EndpointWithoutRequest
       }
 
       // Parse query parameters
-      var searchTerm = Query<string>("q");
+      var searchTerm = Query<string>("searchTerm", isRequired: false);
       if (string.IsNullOrWhiteSpace(searchTerm))
       {
         HttpContext.Response.StatusCode = 400;
-        await HttpContext.Response.WriteAsJsonAsync(new { error = "Search term 'q' is required" }, ct);
+        await HttpContext.Response.WriteAsJsonAsync(new { error = "Search term 'searchTerm' is required" }, ct);
         return;
       }
 
-      var teamIdStr = Query<string?>("teamId");
+      var teamIdStr = Query<string?>("teamId", isRequired: false);
       Guid? teamId = null;
       if (!string.IsNullOrEmpty(teamIdStr) && Guid.TryParse(teamIdStr, out var parsedTeamId))
       {

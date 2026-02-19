@@ -41,6 +41,7 @@ public class DocumentEndpointTests : IClassFixture<CustomWebApplicationFactory<P
   [Fact]
   public async Task CreateDocument_WithValidData_Returns201()
   {
+    await AuthenticateAsync();
     var request = new
     {
       Title = "Functional Test Doc",
@@ -78,6 +79,7 @@ public class DocumentEndpointTests : IClassFixture<CustomWebApplicationFactory<P
   [Fact]
   public async Task CreateDocument_WithTags_Returns201()
   {
+    await AuthenticateAsync();
     var request = new
     {
       Title = "Tagged Doc",
@@ -96,7 +98,7 @@ public class DocumentEndpointTests : IClassFixture<CustomWebApplicationFactory<P
   [Fact]
   public async Task ListDocuments_Returns200()
   {
-    // Create a document first
+    await AuthenticateAsync();
     await CreateDocumentAsync();
 
     var response = await _client.GetAsync("/api/v1/documents");
@@ -123,6 +125,7 @@ public class DocumentEndpointTests : IClassFixture<CustomWebApplicationFactory<P
   [Fact]
   public async Task ListDocuments_WithSearch_Returns200()
   {
+    await AuthenticateAsync();
     await CreateDocumentAsync("Searchable Document XYZ");
 
     var response = await _client.GetAsync("/api/v1/documents?search=Searchable");
@@ -135,6 +138,7 @@ public class DocumentEndpointTests : IClassFixture<CustomWebApplicationFactory<P
   [Fact]
   public async Task GetDocumentById_WithValidId_Returns200()
   {
+    await AuthenticateAsync();
     var documentId = await CreateDocumentAsync();
 
     var response = await _client.GetAsync($"/api/v1/documents/{documentId}");
@@ -145,6 +149,7 @@ public class DocumentEndpointTests : IClassFixture<CustomWebApplicationFactory<P
   [Fact]
   public async Task GetDocumentById_WithInvalidId_Returns404()
   {
+    await AuthenticateAsync();
     var response = await _client.GetAsync($"/api/v1/documents/{Guid.NewGuid()}");
 
     response.StatusCode.ShouldBeOneOf(HttpStatusCode.NotFound, HttpStatusCode.InternalServerError);
@@ -155,6 +160,7 @@ public class DocumentEndpointTests : IClassFixture<CustomWebApplicationFactory<P
   [Fact]
   public async Task PublishDocument_WithValidId_Returns200()
   {
+    await AuthenticateAsync();
     var documentId = await CreateDocumentAsync();
 
     var response = await _client.PostAsync(
@@ -166,6 +172,7 @@ public class DocumentEndpointTests : IClassFixture<CustomWebApplicationFactory<P
   [Fact]
   public async Task PublishDocument_WithInvalidId_Returns404()
   {
+    await AuthenticateAsync();
     var response = await _client.PostAsync(
       $"/api/v1/documents/{Guid.NewGuid()}/publish", null);
 

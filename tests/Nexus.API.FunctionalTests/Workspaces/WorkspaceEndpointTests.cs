@@ -25,9 +25,12 @@ public class WorkspaceEndpointTests : IClassFixture<CustomWebApplicationFactory<
       new AuthenticationHeaderValue("Bearer", token);
   }
 
-  private async Task<Guid> CreateTeamAsync(string name = "Test Team for Workspace")
+  private async Task<Guid> CreateTeamAsync(string name = "")
   {
-    var response = await _client.PostAsJsonAsync("/api/v1/teams", new { Name = name });
+    var teamName = string.IsNullOrEmpty(name)
+      ? $"Workspace-Test-Team-{Guid.NewGuid():N}"
+      : name;
+    var response = await _client.PostAsJsonAsync("/api/v1/teams", new { Name = teamName });
     response.EnsureSuccessStatusCode();
     var result = await response.Content.ReadFromJsonAsync<CreateTeamResult>();
     return result!.TeamId;

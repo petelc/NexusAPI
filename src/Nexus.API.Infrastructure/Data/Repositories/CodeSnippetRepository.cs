@@ -119,7 +119,19 @@ public class CodeSnippetRepository : ICodeSnippetRepository
     CodeSnippet entity,
     CancellationToken cancellationToken = default)
   {
-    _dbContext.Set<CodeSnippet>().Update(entity);
+    // When entity was loaded via GetByIdAsync, EF Core already tracks it.
+    // Calling Update() on a tracked entity with OwnsMany (Forks) incorrectly
+    // marks newly added SnippetFork entries as Modified instead of Added,
+    // causing a DbUpdateConcurrencyException (0 rows affected) on INSERT.
+    //
+    // If the entity is already tracked (Unchanged/Modified), skip Update()
+    // and rely on EF Core's snapshot-based change detection, which correctly
+    // detects new owned collection entries and generates INSERT statements.
+    if (_dbContext.Entry(entity).State == EntityState.Detached)
+    {
+      _dbContext.Set<CodeSnippet>().Update(entity);
+    }
+
     await _dbContext.SaveChangesAsync(cancellationToken);
   }
 

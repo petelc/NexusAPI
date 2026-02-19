@@ -55,7 +55,7 @@ public class GetWorkspaceByIdEndpoint : EndpointWithoutRequest
       }
 
       // Parse query parameter
-      var includeMembers = Query<bool?>("includeMembers") ?? false;
+      var includeMembers = Query<bool?>("includeMembers", isRequired: false) ?? false;
 
       // Create query
       var query = new GetWorkspaceByIdQuery(workspaceId, includeMembers);

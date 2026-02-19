@@ -48,10 +48,12 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
 
       try
       {
-        // Apply migrations to both database contexts
+        // AppDbContext has no EF migrations yet — use EnsureCreated to create
+        // the schema directly from the current model.
         var appDb = scopedServices.GetRequiredService<AppDbContext>();
-        appDb.Database.Migrate();
+        appDb.Database.EnsureCreated();
 
+        // IdentityDbContext has code-first migrations; apply them.
         var identityDb = scopedServices.GetRequiredService<IdentityDbContext>();
         identityDb.Database.Migrate();
 
@@ -145,6 +147,7 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
       if (result.Succeeded)
       {
         await userManager.AddToRoleAsync(testUser, "Editor");
+        await userManager.AddToRoleAsync(testUser, "Admin");
       }
     }
   }

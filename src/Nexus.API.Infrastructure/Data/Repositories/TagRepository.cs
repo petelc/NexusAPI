@@ -113,9 +113,21 @@ public class TagRepository : ITagRepository
     return newTag;
   }
 
-  public Task<Tag> GetOrCreateAsync(string name, string? color = null, CancellationToken cancellationToken = default)
+  public async Task<Tag> GetOrCreateAsync(string name, string? color = null, CancellationToken cancellationToken = default)
   {
-    throw new NotImplementedException();
+    var normalised = name.Trim().ToLowerInvariant();
+
+    var existing = await _dbContext.Set<Tag>()
+      .FirstOrDefaultAsync(t => t.Name == normalised, cancellationToken);
+
+    if (existing is not null)
+      return existing;
+
+    var newTag = Tag.Create(normalised, color);
+    _dbContext.Set<Tag>().Add(newTag);
+    await _dbContext.SaveChangesAsync(cancellationToken);
+
+    return newTag;
   }
 
 

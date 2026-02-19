@@ -183,10 +183,13 @@ app.UseFastEndpoints(config =>
   config.Versioning.PrependToRoute = false;  // Don't add version to individual routes
 });
 
-// Seed database
-using (var scope = app.Services.CreateScope())
+// Seed database (skip in Testing – the test factory handles migrations and seeding)
+if (!app.Environment.IsEnvironment("Testing"))
 {
-  await SeedData.InitializeAsync(scope.ServiceProvider);
+  using (var scope = app.Services.CreateScope())
+  {
+    await SeedData.InitializeAsync(scope.ServiceProvider);
+  }
 }
 
 

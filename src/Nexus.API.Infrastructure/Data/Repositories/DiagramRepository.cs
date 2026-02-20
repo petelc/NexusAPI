@@ -36,7 +36,11 @@ public class DiagramRepository : IDiagramRepository
 
   public async Task UpdateAsync(Diagram diagram, CancellationToken cancellationToken = default)
   {
-    _context.Diagrams.Update(diagram);
+    // The diagram is always loaded from this same DbContext instance, so it is already
+    // tracked in Unchanged state. Calling Update() on a tracked entity with OwnsOne
+    // value objects (Canvas, Title) marks their shadow FK key properties as Modified,
+    // which EF Core forbids. Rely on change tracking instead: new elements/connections
+    // added to navigation properties are automatically detected as Added.
     await _context.SaveChangesAsync(cancellationToken);
   }
 

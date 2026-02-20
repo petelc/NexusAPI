@@ -1,5 +1,6 @@
 using FastEndpoints;
 using System.Security.Claims;
+using System.Text.Json;
 using Nexus.API.Core.Interfaces;
 using Nexus.API.Core.ValueObjects;
 using Nexus.API.UseCases.Diagrams.DTOs;
@@ -55,7 +56,7 @@ public class UpdateLayerEndpoint : EndpointWithoutRequest
       return;
     }
 
-    var request = await HttpContext.Request.ReadFromJsonAsync<UpdateLayerRequest>(ct);
+    var request = await HttpContext.Request.ReadFromJsonAsync<UpdateLayerRequest>(new JsonSerializerOptions { PropertyNameCaseInsensitive = true }, ct);
     if (request == null)
     {
       HttpContext.Response.StatusCode = 400;

@@ -62,7 +62,7 @@ public class UpdateElementEndpoint : EndpointWithoutRequest
       return;
     }
 
-    var request = await HttpContext.Request.ReadFromJsonAsync<UpdateElementRequest>(ct);
+    var request = await HttpContext.Request.ReadFromJsonAsync<UpdateElementRequest>(new JsonSerializerOptions { PropertyNameCaseInsensitive = true }, ct);
     if (request == null)
     {
       HttpContext.Response.StatusCode = 400;

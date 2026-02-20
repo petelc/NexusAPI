@@ -135,6 +135,15 @@ builder.Services.AddSingleton<System.Text.Encodings.Web.UrlEncoder>(
 // Add Health Checks
 builder.Services.AddHealthChecks();
 
+// Configure HttpContext JSON options so ReadFromJsonAsync (used by EndpointWithoutRequest
+// endpoints) deserialises camelCase JSON from the frontend into PascalCase C# properties.
+// PostConfigure runs after all other Configure() calls (including FastEndpoints) so our
+// setting cannot be overridden.
+builder.Services.PostConfigure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
+{
+  options.SerializerOptions.PropertyNameCaseInsensitive = true;
+});
+
 // FastEndpoints and Swagger
 builder.Services.AddFastEndpoints();
 builder.Services.SwaggerDocument(o =>

@@ -57,7 +57,7 @@ public class AddElementEndpoint : EndpointWithoutRequest
       return;
     }
 
-    var request = await HttpContext.Request.ReadFromJsonAsync<AddElementRequest>(ct);
+    var request = await HttpContext.Request.ReadFromJsonAsync<AddElementRequest>(new JsonSerializerOptions { PropertyNameCaseInsensitive = true }, ct);
     if (request == null)
     {
       HttpContext.Response.StatusCode = 400;

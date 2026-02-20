@@ -1,6 +1,7 @@
 using FastEndpoints;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
+using System.Text.Json;
 using Nexus.API.Core.Aggregates.DiagramAggregate;
 using Nexus.API.Core.ValueObjects;
 using Nexus.API.Core.Interfaces;
@@ -56,7 +57,7 @@ public class AddConnectionEndpoint : EndpointWithoutRequest
       return;
     }
 
-    var request = await HttpContext.Request.ReadFromJsonAsync<AddConnectionRequest>(ct);
+    var request = await HttpContext.Request.ReadFromJsonAsync<AddConnectionRequest>(new JsonSerializerOptions { PropertyNameCaseInsensitive = true }, ct);
     if (request == null)
     {
       HttpContext.Response.StatusCode = 400;

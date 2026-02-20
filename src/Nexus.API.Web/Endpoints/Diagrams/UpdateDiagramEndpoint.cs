@@ -55,7 +55,7 @@ public class UpdateDiagramEndpoint : EndpointWithoutRequest
       return;
     }
 
-    var request = await HttpContext.Request.ReadFromJsonAsync<UpdateDiagramRequest>(ct);
+    var request = await HttpContext.Request.ReadFromJsonAsync<UpdateDiagramRequest>(new JsonSerializerOptions { PropertyNameCaseInsensitive = true }, ct);
     if (request == null)
     {
       HttpContext.Response.StatusCode = 400;

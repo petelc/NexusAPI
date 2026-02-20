@@ -1,6 +1,7 @@
 using FastEndpoints;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
+using System.Text.Json;
 using Nexus.API.Core.Aggregates.DiagramAggregate;
 using Nexus.API.Core.Interfaces;
 using Nexus.API.Core.ValueObjects;
@@ -49,7 +50,8 @@ public class CreateDiagramEndpoint : EndpointWithoutRequest
       return;
     }
 
-    var request = await HttpContext.Request.ReadFromJsonAsync<CreateDiagramRequest>(ct);
+    var request = await HttpContext.Request.ReadFromJsonAsync<CreateDiagramRequest>(
+      new JsonSerializerOptions { PropertyNameCaseInsensitive = true }, ct);
     if (request == null)
     {
       HttpContext.Response.StatusCode = 400;
